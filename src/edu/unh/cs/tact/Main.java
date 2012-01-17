@@ -18,14 +18,23 @@ class Main{
 		ClassGen cg = new ClassGen(jc);
 		InstructionFactory f = new InstructionFactory(cg);
 
-		for(Method m : jc.getMethods()){
+		Method[] oldMethods = jc.getMethods();
+		Method[] newMethods = new Method[oldMethods.length];
+
+		for(int i = 0; i < oldMethods.length; i++){
+			Method m = oldMethods[i];
 			Code c = m.getCode();
-			if(c == null)
+			if(c == null){
+				newMethods[i] = m;
 				continue;
-			byte[] bc = m.getCode().getCode();
+			}
+
+			MethodGen mg = new MethodGen(m, jc.getClassName(), f.getConstantPool());
+
+			byte[] bc = c.getCode();
 			InstructionList il = new InstructionList(bc);
 
-			for(InstructionHandle h : iter(il)){
+			for(InstructionHandle h = il.getStart(); h != null; h = h.getNext()){
 				if(h.getInstruction() instanceof PUTFIELD)
 					il.insert(h,
 						f.createInvoke("edu.unh.cs.tact.Checker",
@@ -36,21 +45,20 @@ class Main{
 						));
 			}
 
-			c.setCode(il.getByteCode());
-			System.out.println(c);
+			il.setPositions();
+			mg.setInstructionList(il);
+			mg.setMaxStack();
+			Method n = mg.getMethod();
+			newMethods[i] = n;
+
+			il.dispose(); // Necessary, he sadly said.
+			
+			System.out.println(n.getCode());
 		}
 
-		System.out.println(jc);
-	}
+		jc.setMethods(newMethods);
+		jc.dump(args[0]);
 
-	static Iterable<InstructionHandle> iter(final InstructionList il){
-		return new Iterable<InstructionHandle>(){
-			@SuppressWarnings("unchecked")
-			public Iterator<InstructionHandle> iterator(){
-				// Why does this warn?
-				// http://commons.apache.org/bcel/apidocs/org/apache/bcel/generic/InstructionList.html#iterator()
-				return il.iterator();
-			}
-		};
+		System.out.println(jc);
 	}
 }
