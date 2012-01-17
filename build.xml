@@ -15,12 +15,12 @@
 
 	<target name="libs" depends="init">
 		<unzip src="lib/${bcel}.zip" dest="lib"/>
-		<move file="lib/${bcel}/${bcel}.jar" todir="lib"/>
+		<copy file="lib/${bcel}/${bcel}.jar" todir="lib"/>
 	</target>
 
 	<target name="compile" depends="libs">
 		<javac srcdir="src" destdir="build" includeantruntime="false">
-			<classpath location="lib/{bcel}.jar"/>
+			<classpath location="lib/${bcel}.jar"/>
 		</javac>
 	</target>
 
