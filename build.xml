@@ -1,0 +1,40 @@
+<!-- Copyright © 2012 Steve McCoy under the MIT license. -->
+
+<project name="tact" default="jar" basedir=".">
+	<!-- Update this when BCEL updates. -->
+	<property name="bcel" value="bcel-5.2"/>
+
+	<target name="init">
+		<mkdir dir="build"/>
+		<mkdir dir="lib"/>
+		<!-- Feel free to change the mirror at will. -->
+		<get src="http://apache.osuosl.org/commons/bcel/binaries/${bcel}.zip"
+			dest="lib/${bcel}.zip"
+			usetimestamp="true"/>
+	</target>
+
+	<target name="libs" depends="init">
+		<unzip src="lib/${bcel}.zip" dest="lib"/>
+		<move file="lib/${bcel}/${bcel}.jar" todir="lib"/>
+	</target>
+
+	<target name="compile" depends="libs">
+		<javac srcdir="src" destdir="build" includeantruntime="false">
+			<classpath location="lib/{bcel}.jar"/>
+		</javac>
+	</target>
+
+	<target name="jar" depends="compile">
+		<jar jarfile="${ant.project.name}.jar" basedir="build">
+			<manifest>
+				<attribute name="Main-Class" value="edu.unh.cs.tact.Main"/>
+				<attribute name="Class-Path" value="lib/${bcel}.jar"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="clean">
+		<delete dir="build"/>
+		<delete file="${ant.project.name}.jar"/>
+	</target>
+</project>
