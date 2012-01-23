@@ -5,13 +5,11 @@ import java.util.*;
 import org.apache.bcel.*;
 import org.apache.bcel.classfile.*;
 import org.apache.bcel.generic.*;
+import org.apache.bcel.verifier.*;
 
 class Main{
-	int someField;
-
 	public static void main(String[] args) throws Exception{
-		Main man = new Main();
-		man.someField = 666;
+		BreakMe.codeToBreak();
 
 		JavaClass jc = new ClassParser(args[0]).parse();
 
@@ -29,20 +27,24 @@ class Main{
 				continue;
 			}
 
+			boolean changed = false;
 			MethodGen mg = new MethodGen(m, jc.getClassName(), f.getConstantPool());
 
 			byte[] bc = c.getCode();
 			InstructionList il = new InstructionList(bc);
 
 			for(InstructionHandle h = il.getStart(); h != null; h = h.getNext()){
-				if(h.getInstruction() instanceof PUTFIELD)
-					il.insert(h,
+				if(h.getInstruction() instanceof PUTFIELD){
+					il.insert(
+						h.getPrev(), // Insert the check before the previous push
 						f.createInvoke("edu.unh.cs.tact.Checker",
 							"check",
 							Type.OBJECT,
 							new Type[]{ Type.OBJECT },
 							Constants.INVOKESTATIC
 						));
+					changed = true;
+				}
 			}
 
 			il.setPositions();
@@ -52,13 +54,25 @@ class Main{
 			newMethods[i] = n;
 
 			il.dispose(); // Necessary, he sadly said.
-			
-			System.out.println(n.getCode());
+
+			if(changed)
+				System.out.println(n.getCode());
 		}
 
-		jc.setMethods(newMethods);
-		jc.dump(args[0]);
+		cg.setMethods(newMethods);
 
-		System.out.println(jc);
+		JavaClass njc = cg.getJavaClass();
+
+		Verifier v = VerifierFactory.getVerifier(njc.getClassName());
+
+		for(int i = 0; i < newMethods.length; i++){
+			VerificationResult vr = v.doPass3b(i);
+			if(vr.getStatus() != VerificationResult.VERIFIED_OK){
+				System.err.printf("Verification failed: %s\n", vr.getMessage());
+				System.exit(1);
+			}
+		}
+
+		njc.dump(args[0]);
 	}
 }
