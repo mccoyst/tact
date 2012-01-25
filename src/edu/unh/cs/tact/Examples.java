@@ -7,6 +7,10 @@ class Examples{
 		ident(ident(o));
 	}
 
+	public static void callAndSet(){
+		ident(new BreakMe()).someField = 1234;
+	}
+
 	public static <T> T ident(T o){
 		return o;
 	}

@@ -2,8 +2,7 @@
 package edu.unh.cs.tact;
 
 class Checker{
-	public static <T> T check(T o){
+	public static void check(Object o){
 		System.err.println("Incredible!");
-		return o;
 	}
 }

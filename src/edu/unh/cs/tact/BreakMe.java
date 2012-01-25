@@ -2,7 +2,7 @@
 package edu.unh.cs.tact;
 
 class BreakMe{
-	private int someField;
+	public int someField;
 
 	public static void codeToBreak(){
 		BreakMe bm = new BreakMe();

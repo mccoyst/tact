@@ -35,14 +35,18 @@ class Main{
 
 			for(InstructionHandle h = il.getStart(); h != null; h = h.getNext()){
 				if(h.getInstruction() instanceof PUTFIELD){
-					il.insert(
+					InstructionHandle ch = il.insert(
 						h.getPrev(), // Insert the check before the previous push
 						f.createInvoke("edu.unh.cs.tact.Checker",
 							"check",
-							Type.OBJECT,
+							Type.VOID,
 							new Type[]{ Type.OBJECT },
 							Constants.INVOKESTATIC
-						));
+					));
+					il.insert(
+						ch,
+						f.createDup(1) // it's a ref, hope 1 is good enough
+					);
 					changed = true;
 				}
 			}
