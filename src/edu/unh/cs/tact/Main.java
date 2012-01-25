@@ -66,17 +66,6 @@ class Main{
 		cg.setMethods(newMethods);
 
 		JavaClass njc = cg.getJavaClass();
-
-		Verifier v = VerifierFactory.getVerifier(njc.getClassName());
-
-		for(int i = 0; i < newMethods.length; i++){
-			VerificationResult vr = v.doPass3b(i);
-			if(vr.getStatus() != VerificationResult.VERIFIED_OK){
-				System.err.printf("Verification failed: %s\n", vr.getMessage());
-				System.exit(1);
-			}
-		}
-
 		njc.dump(args[0]);
 	}
 }
