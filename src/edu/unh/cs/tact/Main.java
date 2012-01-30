@@ -11,7 +11,12 @@ class Main{
 	public static void main(String[] args) throws Exception{
 		BreakMe.codeToBreak();
 
-		JavaClass jc = new ClassParser(args[0]).parse();
+		for(String arg : args)
+			inject(arg);
+	}
+
+	private static void inject(String fname) throws Exception{
+		JavaClass jc = new ClassParser(fname).parse();
 
 		ClassGen cg = new ClassGen(jc);
 		InstructionFactory f = new InstructionFactory(cg);
@@ -46,6 +51,6 @@ class Main{
 		cg.setMethods(newMethods);
 
 		JavaClass njc = cg.getJavaClass();
-		njc.dump(args[0]);
+		njc.dump(fname);
 	}
 }
