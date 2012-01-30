@@ -27,29 +27,13 @@ class Main{
 				continue;
 			}
 
-			boolean changed = false;
 			MethodGen mg = new MethodGen(m, jc.getClassName(), f.getConstantPool());
 
 			byte[] bc = c.getCode();
 			InstructionList il = new InstructionList(bc);
 
-			for(InstructionHandle h = il.getStart(); h != null; h = h.getNext()){
-				if(h.getInstruction() instanceof PUTFIELD){
-					InstructionHandle ch = il.insert(
-						h.getPrev(), // Insert the check before the previous push
-						f.createInvoke("edu.unh.cs.tact.Checker",
-							"check",
-							Type.VOID,
-							new Type[]{ Type.OBJECT },
-							Constants.INVOKESTATIC
-					));
-					il.insert(
-						ch,
-						f.createDup(1) // it's a ref, hope 1 is good enough
-					);
-					changed = true;
-				}
-			}
+			BasicBlock bb = new BasicBlock(f, il, il.getStart(), il.getEnd());
+			boolean changed = bb.insertChecks();
 
 			il.setPositions();
 			mg.setInstructionList(il);
