@@ -35,13 +35,9 @@ class Main{
 			BasicBlock bb = new BasicBlock(f, il, il.getStart(), il.getEnd());
 			boolean changed = bb.insertChecks();
 
-			il.setPositions();
 			mg.setInstructionList(il);
-			mg.setMaxStack();
 			Method n = mg.getMethod();
 			newMethods[i] = n;
-
-			il.dispose(); // Necessary, he sadly said.
 
 			if(changed)
 				System.out.println(n.getCode());
