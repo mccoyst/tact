@@ -8,6 +8,8 @@ import org.apache.bcel.generic.*;
 import org.apache.bcel.verifier.*;
 
 class Main{
+	static boolean loud = false;
+
 	public static void main(String[] args) throws Exception{
 		for(String arg : args){
 			if(arg.equals("-break")){
@@ -16,6 +18,8 @@ class Main{
 			}else if(arg.equals("-work")){
 				BreakMe.codeThatWorks();
 				return;
+			}else if(arg.equals("-loud")){
+				loud = true;
 			}
 			inject(arg);
 		}
@@ -50,7 +54,7 @@ class Main{
 			Method n = mg.getMethod();
 			newMethods[i] = n;
 
-			if(changed)
+			if(loud && changed)
 				System.out.println(n.getCode());
 		}
 
