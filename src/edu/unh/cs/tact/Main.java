@@ -32,7 +32,8 @@ class Main{
 		try{
 			file = new BufferedInputStream(new FileInputStream(fname));
 		}catch(FileNotFoundException e){
-			System.err.printf("I failed to open \"%s\": %s\n", fname, e.getLocalizedMessage());
+			System.err.printf("I failed to open \"%s\": %s\n",
+				fname, e.getLocalizedMessage());
 			System.exit(1);
 		}
 
