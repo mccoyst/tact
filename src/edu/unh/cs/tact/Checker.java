@@ -2,20 +2,33 @@
 package edu.unh.cs.tact;
 
 import java.util.*;
+import static java.util.Collections.*;
+import java.lang.ref.*;
 
 class Checker{
-	private static Map<Object, Thread> owners = new HashMap<Object, Thread>();
+	private static Map<Object, WeakReference<Thread>> owners =
+		synchronizedMap(new WeakHashMap<Object, WeakReference<Thread>>());
 
-	public static synchronized void check(Object o){
+	public static void check(Object o){
+		if(o == null)
+			return;
+
 		Thread ct = Thread.currentThread();
+		WeakReference<Thread> ref = owners.get(o);
 
-		if(!owners.containsKey(o)){
-			owners.put(o, ct);
-			System.err.printf("Added %s -> %s\n", o, ct);
+		if(ref == null){
+			owners.put(o, new WeakReference<Thread>(ct));
+			System.err.printf("ADD \"%s\" -> %s\n", o, ct);
 			return;
 		}
 
-		if(owners.get(o).equals(ct)){
+		Thread owner = ref.get();
+		if(owner == null){
+			owners.put(o, new WeakReference<Thread>(ct));
+			System.err.printf("RE-THREAD \"%s\" -> %s\n", o, ct);
+		}
+
+		if(owner.equals(ct)){
 			System.err.printf("OK access (%s -> %s)\n", o, ct);
 			return;
 		}
