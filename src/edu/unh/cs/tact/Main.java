@@ -9,10 +9,16 @@ import org.apache.bcel.verifier.*;
 
 class Main{
 	public static void main(String[] args) throws Exception{
-		BreakMe.codeToBreak();
-
-		for(String arg : args)
+		for(String arg : args){
+			if(arg.equals("-break")){
+				BreakMe.codeToBreak();
+				return;
+			}else if(arg.equals("-work")){
+				BreakMe.codeThatWorks();
+				return;
+			}
 			inject(arg);
+		}
 	}
 
 	private static void inject(String fname) throws Exception{
