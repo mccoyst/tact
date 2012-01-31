@@ -25,26 +25,32 @@ class BasicBlock{
 		boolean changed = false;
 		InstructionHandle end = this.end.getNext();
 		for(InstructionHandle h = begin; h != end; h = h.getNext()){
-			if(!(h.getInstruction() instanceof PUTFIELD))
-				continue;
-
-			InstructionHandle chk = list.insert(
-				h.getPrev(), // Insert the check before the previous push
-				f.createInvoke(
-					"edu.unh.cs.tact.Checker",
-					"check",
-					Type.VOID,
-					new Type[]{ Type.OBJECT },
-					Constants.INVOKESTATIC
-			));
-			list.insert(
-				chk,
-				f.createDup(1) // it's a ref, hope 1 is good enough
-			);
-
-			changed = true;
+			Instruction code = h.getInstruction();
+			if(code instanceof PUTFIELD){
+				insertCheck(h.getPrev());
+				changed = true;
+			}else if(code instanceof NEW){
+				insertCheck(h.getNext());
+				changed = true;
+			}
 		}
 
 		return changed;
+	}
+
+	private void insertCheck(InstructionHandle h){
+		InstructionHandle chk = list.insert(
+			h,
+			f.createInvoke(
+				"edu.unh.cs.tact.Checker",
+				"check",
+				Type.VOID,
+				new Type[]{ Type.OBJECT },
+				Constants.INVOKESTATIC
+			));
+		list.insert(
+			chk,
+			f.createDup(1) // it's a ref, hope 1 is good enough
+		);
 	}
 }
