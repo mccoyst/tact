@@ -1,6 +1,7 @@
 // Copyright © 2012 Steve McCoy under the MIT license.
 package edu.unh.cs.tact;
 
+import java.io.*;
 import java.util.*;
 import org.apache.bcel.*;
 import org.apache.bcel.classfile.*;
@@ -26,8 +27,15 @@ class Main{
 	}
 
 	private static void inject(String fname) throws Exception{
-		JavaClass jc = new ClassParser(fname).parse();
+		InputStream file = null;
+		try{
+			file = new BufferedInputStream(new FileInputStream(fname));
+		}catch(FileNotFoundException e){
+			System.err.printf("I failed to open \"%s\": %s\n", fname, e.getLocalizedMessage());
+			System.exit(1);
+		}
 
+		JavaClass jc = new ClassParser(file, fname).parse();
 		ClassGen cg = new ClassGen(jc);
 		InstructionFactory f = new InstructionFactory(cg);
 
