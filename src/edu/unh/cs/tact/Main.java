@@ -21,6 +21,7 @@ class Main{
 				return;
 			}else if(arg.equals("-loud")){
 				loud = true;
+				continue;
 			}
 			inject(arg);
 		}
