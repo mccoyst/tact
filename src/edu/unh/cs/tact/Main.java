@@ -53,8 +53,10 @@ class Main{
 			boolean changed = new BasicBlock(cp, insf, mg).insertChecks();
 			methods[i] = mg.getMethod();
 
-			if(loud && changed)
+			if(loud && changed){
+				System.out.println(methods[i]);
 				System.out.println(methods[i].getCode());
+			}
 		}
 
 		jc.setConstantPool(cp.getFinalConstantPool());
