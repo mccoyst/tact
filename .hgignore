@@ -1,4 +1,4 @@
 syntax: glob
 *.class
-*.jar
-lib
+tact.jar
+

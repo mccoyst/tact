@@ -6,24 +6,9 @@
 
 	<target name="init">
 		<mkdir dir="build"/>
-		<mkdir dir="lib"/>
-		<!-- Feel free to change the mirror at will. -->
-		<get src="http://apache.osuosl.org/commons/bcel/binaries/${bcel}.zip"
-			dest="lib/${bcel}.zip"
-			usetimestamp="true"/>
-		<uptodate property="unzipped"
-			srcfile="lib/${bcel}.zip"
-			targetfile="lib/${bcel}.jar"/>
 	</target>
 
-	<target name="libs" depends="init" unless="unzipped">
-		<unzip src="lib/${bcel}.zip" dest="lib"/>
-		<copy file="lib/${bcel}/${bcel}.jar" todir="lib"/>
-		<!-- Touch it to avoid old zip dates -->
-		<touch file="lib/${bcel}.jar"/>
-	</target>
-
-	<target name="compile" depends="libs">
+	<target name="compile" depends="init">
 		<javac srcdir="src" destdir="build" includeantruntime="false">
 			<compilerarg value="-Xlint"/>
 			<classpath location="lib/${bcel}.jar"/>
