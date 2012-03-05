@@ -17,6 +17,7 @@ class BreakMe implements Runnable{
 	public static void codeThatWorks(){
 		BreakMe bm = new BreakMe();
 		bm.someField = 111;
+		Checker.release(bm);
 
 		Thread t = new Thread(bm, "that's good!");
 		t.start();
