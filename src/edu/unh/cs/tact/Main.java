@@ -51,6 +51,7 @@ class Main{
 
 			MethodGen mg = new MethodGen(methods[i], jc.getClassName(), cp);
 			boolean changed = new BasicBlock(cp, insf, mg.getInstructionList()).insertChecks();
+			mg.setMaxStack();
 			methods[i] = mg.getMethod();
 
 			if(loud && changed)

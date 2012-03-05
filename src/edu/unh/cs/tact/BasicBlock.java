@@ -27,7 +27,7 @@ class BasicBlock{
 		InstructionHandle end = this.end.getNext();
 		for(InstructionHandle h = begin; h != end; h = h.getNext()){
 			Instruction code = h.getInstruction();
-			if(code instanceof FieldInstruction){
+			if(code instanceof PUTFIELD || code instanceof PUTSTATIC){
 				FieldInstruction pf = (FieldInstruction)code;
 				if(pf.getType(cp).getSize() == 2){
 					insertCheck64(h);
