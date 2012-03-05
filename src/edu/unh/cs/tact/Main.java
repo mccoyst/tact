@@ -19,6 +19,9 @@ class Main{
 			}else if(arg.equals("-work")){
 				BreakMe.codeThatWorks();
 				return;
+			}else if(arg.equals("-pi")){
+				BreakMe.pi();
+				return;
 			}else if(arg.equals("-loud")){
 				loud = true;
 				continue;
@@ -38,39 +41,23 @@ class Main{
 		}
 
 		JavaClass jc = new ClassParser(file, fname).parse();
-		ClassGen cg = new ClassGen(jc);
-		InstructionFactory f = new InstructionFactory(cg);
+		Method[] methods = jc.getMethods();
+		ConstantPoolGen cp = new ConstantPoolGen(jc.getConstantPool());
+		InstructionFactory insf = new InstructionFactory(cp);
 
-		Method[] oldMethods = jc.getMethods();
-		Method[] newMethods = new Method[oldMethods.length];
-
-		for(int i = 0; i < oldMethods.length; i++){
-			Method m = oldMethods[i];
-			Code c = m.getCode();
-			if(c == null){
-				newMethods[i] = m;
+		for(int i = 0; i < methods.length; i++){
+			if(methods[i].isNative())
 				continue;
-			}
 
-			MethodGen mg = new MethodGen(m, jc.getClassName(), f.getConstantPool());
-
-			byte[] bc = c.getCode();
-			InstructionList il = new InstructionList(bc);
-
-			BasicBlock bb = new BasicBlock(f, il, il.getStart(), il.getEnd());
-			boolean changed = bb.insertChecks();
-
-			mg.setInstructionList(il);
-			Method n = mg.getMethod();
-			newMethods[i] = n;
+			MethodGen mg = new MethodGen(methods[i], jc.getClassName(), cp);
+			boolean changed = new BasicBlock(cp, insf, mg.getInstructionList()).insertChecks();
+			methods[i] = mg.getMethod();
 
 			if(loud && changed)
-				System.out.println(n.getCode());
+				System.out.println(methods[i].getCode());
 		}
 
-		cg.setMethods(newMethods);
-
-		JavaClass njc = cg.getJavaClass();
-		njc.dump(fname);
+		jc.setConstantPool(cp.getFinalConstantPool());
+		jc.dump(fname);
 	}
 }
