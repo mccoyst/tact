@@ -37,18 +37,14 @@ class BreakMe implements Runnable{
 	}
 
 	public static void pi(){
-/*
 		BreakMe bm = new BreakMe();
 
 		for(int i = 0; i < 1e9; i++){
-			double t = bm.piEst + 4/bm.piDiv;
-			bm.piEst = t;
+			bm.piEst = bm.piEst + 4/bm.piDiv;
 			double d = Math.abs(bm.piDiv) + 2;
-			double dd = bm.piDiv < 0 ? d : -d;
-			bm.piDiv = dd;
+			bm.piDiv = bm.piDiv < 0 ? d : -d;
 		}
 
 		System.out.printf("π ≅ %f\n", bm.piEst);
-*/
 	}
 }

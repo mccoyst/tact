@@ -67,7 +67,19 @@ class Injector{
 	}
 
 	private void insertCheck64(InstructionHandle pf){
-
+		list.insert(pf, new DUP2_X1());
+		list.insert(pf, new POP2());
+		list.insert(pf, new DUP_X2());
+		list.insert(
+			pf,
+			f.createInvoke(
+				"edu.unh.cs.tact.Checker",
+				"check",
+				Type.VOID,
+				new Type[]{ Type.OBJECT },
+				Constants.INVOKESTATIC
+			)
+		);
 	}
 
 	private void insertCheck(InstructionHandle h){
