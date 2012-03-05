@@ -50,7 +50,7 @@ class Main{
 				continue;
 
 			MethodGen mg = new MethodGen(methods[i], jc.getClassName(), cp);
-			boolean changed = new BasicBlock(cp, insf, mg).insertChecks();
+			boolean changed = new Injector(cp, insf, mg).insertChecks();
 			methods[i] = mg.getMethod();
 
 			if(loud && changed){

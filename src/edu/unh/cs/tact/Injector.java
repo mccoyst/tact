@@ -7,14 +7,14 @@ import org.apache.bcel.generic.*;
 
 import static edu.unh.cs.tact.Util.*;
 
-class BasicBlock{
+class Injector{
 	public final ConstantPoolGen cp;
 	public final InstructionFactory f;
 	public final MethodGen mg;
 	public final InstructionList list;
 	public final InstructionHandle begin, end;
 
-	public BasicBlock(ConstantPoolGen cp, InstructionFactory f, MethodGen mg){
+	public Injector(ConstantPoolGen cp, InstructionFactory f, MethodGen mg){
 
 		this.f = notNull(f, "f");
 		this.mg = notNull(mg, "mg");
