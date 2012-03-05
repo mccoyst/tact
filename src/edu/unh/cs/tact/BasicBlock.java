@@ -10,13 +10,15 @@ import static edu.unh.cs.tact.Util.*;
 class BasicBlock{
 	public final ConstantPoolGen cp;
 	public final InstructionFactory f;
+	public final MethodGen mg;
 	public final InstructionList list;
 	public final InstructionHandle begin, end;
 
-	public BasicBlock(ConstantPoolGen cp, InstructionFactory f, InstructionList list){
+	public BasicBlock(ConstantPoolGen cp, InstructionFactory f, MethodGen mg){
 
 		this.f = notNull(f, "f");
-		this.list = notNull(list, "list");
+		this.mg = notNull(mg, "mg");
+		this.list = mg.getInstructionList();
 		this.begin = list.getStart();
 		this.end = list.getEnd();
 		this.cp = notNull(cp, "cp");
@@ -41,6 +43,9 @@ class BasicBlock{
 				changed = true;
 			}*/
 		}
+
+		if(changed)
+			mg.setMaxStack();
 
 		return changed;
 	}
