@@ -31,11 +31,16 @@ class Injector{
 			Instruction code = h.getInstruction();
 			if(code instanceof PUTFIELD || code instanceof PUTSTATIC){
 				FieldInstruction pf = (FieldInstruction)code;
+				String chk = "check";
+
+				if(isReadOnly(pf))
+					chk = "roCheck";
+
 				int fsize = pf.getType(cp).getSize();
 				if(fsize == 2){
-					insertCheck64(h);
+					insertCheck64(h, chk);
 				}else if(fsize == 1){
-					insertCheck32(h);
+					insertCheck32(h, chk);
 				}else{
 					assert false : "A different size of field???";
 				}
@@ -43,11 +48,17 @@ class Injector{
 				changed = true;
 			}else if(isArrayStore(code)){
 				ArrayInstruction pa = (ArrayInstruction)code;
+				String chk = "check";
+
+
+				if(isReadOnly(pa))
+					chk = "roCheck";
+
 				int esize = pa.getType(cp).getSize();
 				if(esize == 2){
-					insertArrayCheck64(h);
+					insertArrayCheck64(h, chk);
 				}else if(esize == 1){
-					insertArrayCheck32(h);
+					insertArrayCheck32(h, chk);
 				}else{
 					assert false : "A different size of element???";
 				}
@@ -64,18 +75,18 @@ class Injector{
 		return changed;
 	}
 
-	private void insertCheck32(InstructionHandle pf){
+	private void insertCheck32(InstructionHandle pf, String chk){
 		list.insert(pf, new SWAP());
 		list.insert(pf, f.createDup(1));
-		insertCheckCall(pf);
+		insertCheckCall(pf, chk);
 		list.insert(pf, new SWAP());
 	}
 
-	private void insertCheck64(InstructionHandle pf){
+	private void insertCheck64(InstructionHandle pf, String chk){
 		list.insert(pf, new DUP2_X1());
 		list.insert(pf, new POP2());
 		list.insert(pf, new DUP_X2());
-		insertCheckCall(pf);
+		insertCheckCall(pf, chk);
 	}
 
 	private boolean isArrayStore(Instruction h){
@@ -90,19 +101,19 @@ class Injector{
 			;
 	}
 
-	private void insertArrayCheck32(InstructionHandle pa){
+	private void insertArrayCheck32(InstructionHandle pa, String chk){
 		list.insert(pa, new DUP2_X1());
 		list.insert(pa, new POP2());
 		list.insert(pa, new DUP_X2());
-		insertCheckCall(pa);
+		insertCheckCall(pa, chk);
 	}
 
-	private void insertArrayCheck64(InstructionHandle pa){
+	private void insertArrayCheck64(InstructionHandle pa, String chk){
 		list.insert(pa, new DUP2_X2());
 		list.insert(pa, new POP2());
 		list.insert(pa, new DUP2());
 		list.insert(pa, new POP());
-		insertCheckCall(pa);
+		insertCheckCall(pa, chk);
 		list.insert(pa, new DUP2_X2());
 		list.insert(pa, new POP2());
 	}
@@ -125,16 +136,24 @@ class Injector{
 	}
 */
 
-	private void insertCheckCall(InstructionHandle h){
+	private void insertCheckCall(InstructionHandle h, String chk){
 		list.insert(
 			h,
 			f.createInvoke(
 				"edu.unh.cs.tact.Checker",
-				"check",
+				chk,
 				Type.VOID,
 				new Type[]{ Type.OBJECT },
 				Constants.INVOKESTATIC
 			)
 		);
+	}
+
+	private boolean isReadOnly(FieldInstruction pf){
+		return false;
+	}
+
+	private boolean isReadOnly(ArrayInstruction pa){
+		return false;
 	}
 }
