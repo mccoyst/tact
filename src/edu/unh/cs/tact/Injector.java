@@ -146,7 +146,7 @@ class Injector{
 				continue;
 
 			for(AnnotationEntry ae : f.getAnnotationEntries()){
-				if(ae.getAnnotationType().equals("ReadOnly"))
+				if(ae.getAnnotationType().equals("Ledu/unh/cs/tact/ReadOnly;"))
 					return true;
 			}
 		}

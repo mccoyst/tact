@@ -7,11 +7,13 @@ class BreakMe implements Runnable{
 	public int someField;
 	public double piDiv = 1, piEst = 0;
 	public double[] someThings;
+	@ReadOnly public int readMe = 515;
 
 	public static void codeToBreak(){
 		BreakMe bm = new BreakMe();
 		bm.someField = 666;
 		bm.someThings = new double[4];
+		int n = bm.readMe;
 
 		new Thread(bm, "that's broken!").start();
 	}
@@ -35,7 +37,8 @@ class BreakMe implements Runnable{
 
 	public void run(){
 		//someField = 42;
-		someThings[0] = 3;
+		//someThings[0] = 3;
+		readMe = 666;
 		Checker.release(this);
 	}
 
