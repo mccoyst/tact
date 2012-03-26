@@ -3,6 +3,7 @@ package edu.unh.cs.tact;
 
 import java.util.*;
 import org.apache.bcel.*;
+import org.apache.bcel.classfile.*;
 import org.apache.bcel.generic.*;
 
 import static edu.unh.cs.tact.Util.*;
@@ -48,7 +49,6 @@ class Injector{
 			}else if(isArrayStore(code)){
 				ArrayInstruction pa = (ArrayInstruction)code;
 				String chk = "check";
-
 
 				if(isReadOnly(pa))
 					chk = "roCheck";
@@ -128,6 +128,28 @@ class Injector{
 	}
 
 	private boolean isReadOnly(FieldInstruction pf){
+		ReferenceType rt = pf.getReferenceType(cp);
+		if(!(rt instanceof ObjectType))
+			return false;
+
+		ObjectType ot = (ObjectType)rt;
+
+		JavaClass jc = null;
+		try{
+			jc = Repository.lookupClass(ot.getClassName());
+		}catch(ClassNotFoundException e){
+			throw new RuntimeException(e);
+		}
+
+		for(Field f : jc.getFields()){
+			if(!f.getName().equals(pf.getFieldName(cp)))
+				continue;
+
+			for(AnnotationEntry ae : f.getAnnotationEntries()){
+				if(ae.getAnnotationType().equals("ReadOnly"))
+					return true;
+			}
+		}
 		return false;
 	}
 

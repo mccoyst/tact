@@ -2,7 +2,7 @@
 
 <project name="tact" default="jar" basedir=".">
 	<!-- Update this when BCEL updates. -->
-	<property name="bcel" value="bcel-5.2"/>
+	<property name="bcel" value="bcel-6.0-SNAPSHOT"/>
 
 	<target name="init">
 		<mkdir dir="build"/>
