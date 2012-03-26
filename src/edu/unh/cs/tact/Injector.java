@@ -15,7 +15,6 @@ class Injector{
 	public final InstructionHandle begin, end;
 
 	public Injector(ConstantPoolGen cp, InstructionFactory f, MethodGen mg){
-
 		this.f = notNull(f, "f");
 		this.mg = notNull(mg, "mg");
 		this.list = mg.getInstructionList();
@@ -63,10 +62,7 @@ class Injector{
 					assert false : "A different size of element???";
 				}
 				changed = true;
-			}/*else if(code instanceof NEW){
-				insertCheck(h.getNext());
-				changed = true;
-			}*/
+			}
 		}
 
 		if(changed)
@@ -117,24 +113,6 @@ class Injector{
 		list.insert(pa, new DUP2_X2());
 		list.insert(pa, new POP2());
 	}
-
-/*
-	private void insertCheck(InstructionHandle h){
-		InstructionHandle chk = list.insert(
-			h,
-			f.createInvoke(
-				"edu.unh.cs.tact.Checker",
-				"check",
-				Type.VOID,
-				new Type[]{ Type.OBJECT },
-				Constants.INVOKESTATIC
-			));
-		list.insert(
-			chk,
-			f.createDup(1) // it's a ref, hope 1 is good enough
-		);
-	}
-*/
 
 	private void insertCheckCall(InstructionHandle h, String chk){
 		list.insert(
