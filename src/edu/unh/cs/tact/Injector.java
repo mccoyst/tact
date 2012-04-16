@@ -28,61 +28,25 @@ class Injector{
 		boolean changed = false;
 		InstructionHandle end = this.end.getNext();
 		for(InstructionHandle h = begin; h != end; h = h.getNext()){
-			Instruction code = h.getInstruction();
-			if(code instanceof PUTFIELD || code instanceof PUTSTATIC){
-				FieldInstruction pf = (FieldInstruction)code;
-				String chk = "check";
+			CheckInserter ins = getInserter(h);
+			if(ins == null)
+				continue;
 
-				if(isReadOnly(pf))
-					chk = "roCheck";
-
-				int fsize = pf.getType(cp).getSize();
-				if(fsize == 2){
-					insertCheck64(h, chk);
-				}else if(fsize == 1){
-					insertCheck32(h, chk);
-				}else{
-					assert false : "A different size of field???";
-				}
-				//TODO: insertCheck(h.getPrev()); for trivial assignments
-				changed = true;
-			}else if(isArrayStore(code)){
-				ArrayInstruction pa = (ArrayInstruction)code;
-				String chk = "check";
-
-				if(isReadOnly(pa))
-					chk = "roCheck";
-
-				int esize = pa.getType(cp).getSize();
-				if(esize == 2){
-					insertArrayCheck64(h, chk);
-				}else if(esize == 1){
-					insertArrayCheck32(h, chk);
-				}else{
-					assert false : "A different size of element???";
-				}
-				changed = true;
+			String chk = "check";
+			String guard = ins.guardName();
+			if(guard != null){
+				// TODO: guards other than this
+				chk = "guardByThis";
 			}
+
+			ins.insertCheck(chk);
+			changed = true;
 		}
 
 		if(changed)
 			mg.setMaxStack();
 
 		return changed;
-	}
-
-	private void insertCheck32(InstructionHandle pf, String chk){
-		list.insert(pf, new SWAP());
-		list.insert(pf, f.createDup(1));
-		insertCheckCall(pf, chk);
-		list.insert(pf, new SWAP());
-	}
-
-	private void insertCheck64(InstructionHandle pf, String chk){
-		list.insert(pf, new DUP2_X1());
-		list.insert(pf, new POP2());
-		list.insert(pf, new DUP_X2());
-		insertCheckCall(pf, chk);
 	}
 
 	private boolean isArrayStore(Instruction h){
@@ -97,24 +61,9 @@ class Injector{
 			;
 	}
 
-	private void insertArrayCheck32(InstructionHandle pa, String chk){
-		list.insert(pa, new DUP2_X1());
-		list.insert(pa, new POP2());
-		list.insert(pa, new DUP_X2());
-		insertCheckCall(pa, chk);
-	}
-
-	private void insertArrayCheck64(InstructionHandle pa, String chk){
-		list.insert(pa, new DUP2_X2());
-		list.insert(pa, new POP2());
-		list.insert(pa, new DUP2());
-		list.insert(pa, new POP());
-		insertCheckCall(pa, chk);
-		list.insert(pa, new DUP2_X2());
-		list.insert(pa, new POP2());
-	}
-
 	private void insertCheckCall(InstructionHandle h, String chk){
+		assert h != null;
+		assert chk != null;
 		list.insert(
 			h,
 			f.createInvoke(
@@ -128,32 +77,158 @@ class Injector{
 	}
 
 	private boolean isReadOnly(FieldInstruction pf){
-		ReferenceType rt = pf.getReferenceType(cp);
-		if(!(rt instanceof ObjectType))
+		JavaClass jc = classFor(pf);
+		if(jc == null)
+			return false;
+		Field f = fieldFor(jc, pf);
+		if(f == null)
 			return false;
 
-		ObjectType ot = (ObjectType)rt;
-
-		JavaClass jc = null;
-		try{
-			jc = Repository.lookupClass(ot.getClassName());
-		}catch(ClassNotFoundException e){
-			throw new RuntimeException(e);
-		}
-
-		for(Field f : jc.getFields()){
-			if(!f.getName().equals(pf.getFieldName(cp)))
-				continue;
-
-			for(AnnotationEntry ae : f.getAnnotationEntries()){
-				if(ae.getAnnotationType().equals("Ledu/unh/cs/tact/ReadOnly;"))
-					return true;
-			}
+		for(AnnotationEntry ae : f.getAnnotationEntries()){
+			if(ae.getAnnotationType().equals("Ledu/unh/cs/tact/ReadOnly;"))
+				return true;
 		}
 		return false;
 	}
 
+	private JavaClass classFor(FieldInstruction fi){
+		ReferenceType rt = fi.getReferenceType(cp);
+		if(!(rt instanceof ObjectType))
+			return null;
+
+		ObjectType ot = (ObjectType)rt;
+		try{
+			return Repository.lookupClass(ot.getClassName());
+		}catch(ClassNotFoundException e){
+			throw new RuntimeException(e);
+		}
+	}
+
+	private Field fieldFor(JavaClass jc, FieldInstruction fi){
+		for(Field f : jc.getFields()){
+			if(f.getName().equals(fi.getFieldName(cp)))
+				return f;
+		}
+		return null;
+	}
+
 	private boolean isReadOnly(ArrayInstruction pa){
 		return false;
+	}
+
+	private interface CheckInserter{
+		void insertCheck(String chk);
+		String guardName();
+		void insertCheck32(String chk);
+		void insertCheck64(String chk);
+	}
+
+	CheckInserter getInserter(InstructionHandle h){
+		Instruction code = h.getInstruction();
+		if(code instanceof PUTFIELD || code instanceof PUTSTATIC){
+			return new RefCheckInserter((FieldInstruction)code, h);
+		}else if(isArrayStore(code)){
+			return new ArrayCheckInserter((ArrayInstruction)code, h);
+		}
+		return null;
+	}
+	
+	private class RefCheckInserter implements CheckInserter{
+		FieldInstruction pf;
+		InstructionHandle h;
+		RefCheckInserter(FieldInstruction pf, InstructionHandle h){
+			this.pf = pf;
+			this.h = h;
+		}
+
+		public void insertCheck(String chk){
+			switch(pf.getType(cp).getSize()){
+			case 1:
+				insertCheck32(chk);
+				break;
+			case 2:
+				insertCheck64(chk);
+				break;
+			default:
+				assert false : "A different size of field???";
+			}
+		}
+
+		public void insertCheck32(String chk){
+			list.insert(h, new SWAP());
+			list.insert(h, f.createDup(1));
+			insertCheckCall(h, chk);
+			list.insert(h, new SWAP());
+		}
+
+		public void insertCheck64(String chk){
+			list.insert(h, new DUP2_X1());
+			list.insert(h, new POP2());
+			list.insert(h, new DUP_X2());
+			insertCheckCall(h, chk);
+		}
+
+		public String guardName(){
+			JavaClass jc = classFor(pf);
+			if(jc == null)
+				return null;
+	
+			Field f = fieldFor(jc, pf);
+			if(f == null)
+				return null;
+	
+			for(AnnotationEntry ae : f.getAnnotationEntries()){
+				if(!ae.getAnnotationType().equals("Ledu/unh/cs/tact/GuardedBy;"))
+					continue;
+	
+				for(ElementValuePair ev : ae.getElementValuePairs())
+					if(ev.getNameString().equals("value"))
+						return ev.getValue().stringifyValue();
+			}
+			return null;
+		}
+	}
+
+	private class ArrayCheckInserter implements CheckInserter{
+		ArrayInstruction pa;
+		InstructionHandle h;
+		ArrayCheckInserter(ArrayInstruction pa, InstructionHandle h){
+			this.pa = pa;
+			this.h = h;
+		}
+
+		public void insertCheck(String chk){
+			switch(pa.getType(cp).getSize()){
+			case 1:
+				insertCheck32(chk);
+				break;
+			case 2:
+				insertCheck64(chk);
+				break;
+			default:
+				assert false : "A different size of field???";
+			}
+		}
+
+		public void insertCheck32(String chk){
+			list.insert(h, new DUP2_X1());
+			list.insert(h, new POP2());
+			list.insert(h, new DUP_X2());
+			insertCheckCall(h, chk);
+		}
+	
+		public void insertCheck64(String chk){
+			list.insert(h, new DUP2_X2());
+			list.insert(h, new POP2());
+			list.insert(h, new DUP2());
+			list.insert(h, new POP());
+			insertCheckCall(h, chk);
+			list.insert(h, new DUP2_X2());
+			list.insert(h, new POP2());
+		}
+
+		public String guardName(){
+			return null;
+		}
 	}
 }

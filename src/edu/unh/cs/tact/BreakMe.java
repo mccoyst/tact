@@ -9,19 +9,26 @@ class BreakMe implements Runnable{
 	public double[] someThings;
 	@ReadOnly public int readMe = 515;
 
+	@GuardedBy("this") public int princess;
+
 	public static void codeToBreak(){
 		BreakMe bm = new BreakMe();
 		bm.someField = 666;
 		bm.someThings = new double[4];
 		int n = bm.readMe;
+		bm.princess = 666;
 
-		new Thread(bm, "that's broken!").start();
+	//	new Thread(bm, "that's broken!").start();
 	}
 
 	public static void codeThatWorks(){
 		BreakMe bm = new BreakMe();
 		bm.someField = 111;
 		Checker.release(bm);
+
+		synchronized(bm){
+			bm.princess = 99;
+		}
 
 		Thread t = new Thread(bm, "that's good!");
 		t.start();

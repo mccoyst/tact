@@ -68,6 +68,15 @@ class Checker{
 		throw new IllegalAccessError(String.format("BAD access (%s -> %s)", o, ct));
 	}
 
+	public static void guardByThis(Object o){
+		if(o == null)
+			return;
+
+		if(!Thread.holdsLock(o))
+			throw new IllegalAccessError(String.format(
+				"BAD unguarded-access (%s -> %s)", o, Thread.currentThread()));
+	}
+
 	public static void release(Object o){
 		if(o == null)
 			return;

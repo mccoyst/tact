@@ -1,3 +1,3 @@
 #!/bin/sh
 
-exec java -jar tact.jar "$@"
+exec java -ea -jar tact.jar "$@"
