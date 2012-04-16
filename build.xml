@@ -11,6 +11,7 @@
 	<target name="compile" depends="init">
 		<javac srcdir="src" destdir="build" includeantruntime="false">
 			<compilerarg value="-Xlint"/>
+			<compilerarg value="-g:source,lines"/>
 			<classpath location="lib/${bcel}.jar"/>
 		</javac>
 	</target>
