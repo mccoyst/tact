@@ -17,10 +17,16 @@
 	</target>
 
 	<target name="jar" depends="compile">
-		<jar jarfile="${ant.project.name}.jar" basedir="build">
+		<jar jarfile="${ant.project.name}.jar" basedir="build" includes="edu/unh/cs/tact/**">
 			<manifest>
 				<attribute name="Main-Class" value="edu.unh.cs.tact.Main"/>
 				<attribute name="Class-Path" value="lib/${bcel}.jar"/>
+			</manifest>
+		</jar>
+		<jar jarfile="pulses.jar" basedir="build" includes="edu/unh/cs/pulses/**">
+			<manifest>
+				<attribute name="Main-Class" value="edu.unh.cs.pulses.Application"/>
+				<attribute name="Class-Path" value="${ant.project.name}.jar"/>
 			</manifest>
 		</jar>
 	</target>
@@ -28,5 +34,6 @@
 	<target name="clean">
 		<delete dir="build"/>
 		<delete file="${ant.project.name}.jar"/>
+		<delete file="pulses.jar"/>
 	</target>
 </project>
