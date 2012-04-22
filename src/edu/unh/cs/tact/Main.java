@@ -12,6 +12,7 @@ class Main{
 	static boolean loud = false;
 
 	public static void main(String[] args) throws Exception{
+		ArrayList<String> classes = new ArrayList<String>();
 		for(String arg : args){
 			if(arg.equals("-break")){
 				BreakMe.codeToBreak();
@@ -26,28 +27,33 @@ class Main{
 				loud = true;
 				continue;
 			}
-			inject(arg);
+			classes.add(arg);
+			preload(arg);
 		}
+
+		for(String cf : classes)
+			inject(cf);
+	}
+
+	private static void preload(String fname) throws Exception{
+		Repository.addClass(load(fname));
 	}
 
 	private static void inject(String fname) throws Exception{
-		InputStream file = null;
-		try{
-			file = new BufferedInputStream(new FileInputStream(fname));
-		}catch(FileNotFoundException e){
-			System.err.printf("I failed to open \"%s\": %s\n",
-				fname, e.getLocalizedMessage());
-			System.exit(1);
-		}
+		JavaClass jc = load(fname);
+		if(jc.isInterface())
+			return;
 
-		JavaClass jc = new ClassParser(file, fname).parse();
 		Method[] methods = jc.getMethods();
 		ConstantPoolGen cp = new ConstantPoolGen(jc.getConstantPool());
 		InstructionFactory insf = new InstructionFactory(cp);
 
 		for(int i = 0; i < methods.length; i++){
-			if(methods[i].isNative())
+			if(methods[i].isNative() || methods[i].isAbstract())
 				continue;
+
+			if(loud)
+				System.err.printf("Injecting %s.%s\n", jc.getClassName(), methods[i]);
 
 			MethodGen mg = new MethodGen(methods[i], jc.getClassName(), cp);
 			boolean changed = new Injector(cp, insf, mg).insertChecks();
@@ -61,5 +67,20 @@ class Main{
 
 		jc.setConstantPool(cp.getFinalConstantPool());
 		jc.dump(fname);
+	}
+
+	private static JavaClass load(String fname) throws Exception{
+		InputStream file = null;
+		try{
+			file = new BufferedInputStream(new FileInputStream(fname));
+			return new ClassParser(file, fname).parse();
+		}catch(FileNotFoundException e){
+			System.err.printf("I failed to open \"%s\": %s\n",
+				fname, e.getLocalizedMessage());
+			System.exit(1);
+		}finally{
+			if(file != null) file.close();
+		}
+		throw new AssertionError("Shouldn't get here");
 	}
 }
