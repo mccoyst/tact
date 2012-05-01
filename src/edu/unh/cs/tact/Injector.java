@@ -125,8 +125,10 @@ class Injector{
 
 	CheckInserter getInserter(InstructionHandle h){
 		Instruction code = h.getInstruction();
-		if(code instanceof PUTFIELD || code instanceof PUTSTATIC){
+		if(code instanceof PUTFIELD){
 			return new RefCheckInserter((FieldInstruction)code, h);
+		}else if(code instanceof PUTSTATIC){
+			return new StaticRefCheckInserter((PUTSTATIC)code, h);
 		}else if(isArrayStore(code)){
 			return new ArrayCheckInserter((ArrayInstruction)code, h);
 		}
@@ -174,6 +176,64 @@ class Injector{
 				return null;
 	
 			Field f = fieldFor(jc, pf);
+			if(f == null)
+				return null;
+	
+			for(AnnotationEntry ae : f.getAnnotationEntries()){
+				if(!ae.getAnnotationType().equals("Ledu/unh/cs/tact/GuardedBy;"))
+					continue;
+	
+				for(ElementValuePair ev : ae.getElementValuePairs())
+					if(ev.getNameString().equals("value"))
+						return ev.getValue().stringifyValue();
+			}
+			return null;
+		}
+	}
+
+	private class StaticRefCheckInserter implements CheckInserter{
+		PUTSTATIC ps;
+		InstructionHandle h;
+		StaticRefCheckInserter(PUTSTATIC ps, InstructionHandle h){
+			this.ps = ps;
+			this.h = h;
+		}
+
+		public void insertCheck(String chk){
+			switch(ps.getType(cp).getSize()){
+			case 1:
+				insertCheck32(chk);
+				break;
+			case 2:
+				insertCheck64(chk);
+				break;
+			default:
+				assert false : "A different size of field???";
+			}
+		}
+
+		public void insertCheck32(String chk){
+			int i = ps.getIndex();
+			Constant c = cp.getConstant(i);
+			if(!(c instanceof ConstantFieldref))
+				throw new AssertionError("Flawed static field check");
+
+			ConstantFieldref cfr = (ConstantFieldref)c;
+			list.insert(h, new LDC_W(cfr.getClassIndex()));
+			insertCheckCall(h, chk);
+		}
+
+		public void insertCheck64(String chk){
+			// Field's size doesn't matter; we just get the class ref.
+			insertCheck32(chk);
+		}
+
+		public String guardName(){
+			JavaClass jc = classFor(ps);
+			if(jc == null)
+				return null;
+	
+			Field f = fieldFor(jc, ps);
 			if(f == null)
 				return null;
 	
