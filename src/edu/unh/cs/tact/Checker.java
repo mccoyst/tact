@@ -5,7 +5,7 @@ import java.util.*;
 import static java.util.Collections.*;
 import java.lang.ref.*;
 
-class Checker{
+public class Checker{
 	private static Map<Object, WeakReference<Thread>> owners =
 		synchronizedMap(new WeakHashMap<Object, WeakReference<Thread>>());
 
