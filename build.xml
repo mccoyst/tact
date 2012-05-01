@@ -29,11 +29,18 @@
 				<attribute name="Class-Path" value="${ant.project.name}.jar"/>
 			</manifest>
 		</jar>
+		<jar jarfile="files.jar" basedir="build" includes="edu/unh/cs/files/**">
+			<manifest>
+				<attribute name="Main-Class" value="edu.unh.cs.files.SendFile"/>
+				<attribute name="Class-Path" value="${ant.project.name}.jar"/>
+			</manifest>
+		</jar>
 	</target>
 
 	<target name="clean">
 		<delete dir="build"/>
 		<delete file="${ant.project.name}.jar"/>
 		<delete file="pulses.jar"/>
+		<delete file="files.jar"/>
 	</target>
 </project>
