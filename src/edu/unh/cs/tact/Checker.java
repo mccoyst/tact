@@ -28,8 +28,7 @@ public class Checker{
 		Thread owner = ref.get();
 		if(owner == null){
 			owners.put(o, new WeakReference<Thread>(ct));
-//			System.err.printf("OK re-thread \"%s\" -> %s\n", o, ct);
-			return;
+			throw new IllegalAccessError(String.format("BAD re-thread \"%s\" -> %s\n", o, ct));
 		}
 
 		if(owner.equals(ct)){
