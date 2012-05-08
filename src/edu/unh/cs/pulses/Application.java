@@ -32,6 +32,7 @@ import java.util.Iterator;
  * @see <a href="Application.java">Application.java</a>
  */
 public class Application extends JApplet {
+  private static final long serialVersionUID = 1;
 
   private static ShapeFactory colds = ShapeFactory.ringFactory(.6);
   private static ShapeFactory hots = ShapeFactory.sqringFactory(.6);

@@ -24,6 +24,7 @@ import java.awt.Point;
  * @see <a href="Display.java">Display.java</a>
  */
 public class Display extends javax.swing.JComponent {
+  private static final long serialVersionUID = 1;
 
   private LinkedList<View> views;
   private View[] viewArray;

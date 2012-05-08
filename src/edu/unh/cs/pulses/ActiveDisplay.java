@@ -7,6 +7,8 @@ package edu.unh.cs.pulses;
 * @see javax.swing.Timer
 */
 public class ActiveDisplay extends Display{
+	private static final long serialVersionUID = 1;
+
 	/** Timer for refreshing the display. */
 	private javax.swing.Timer refresher;
 
