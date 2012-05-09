@@ -11,13 +11,23 @@ class BreakMe implements Runnable{
 
 	@GuardedBy("this") public int princess;
 
+	private class Worker extends Thread{
+		public Worker(String name){
+			super(name);
+		}
+	}
+
+	public BreakMe(){
+		Thread t = new Worker("work it");
+	}
+
 	public static void codeToBreak(){
 		BreakMe bm = new BreakMe();
 		bm.someField = 666;
 		bm.someThings = new double[4];
 		int n = bm.readMe;
-		bm.princess = 666;
 
+		bm.princess = 666;
 	//	new Thread(bm, "that's broken!").start();
 	}
 
