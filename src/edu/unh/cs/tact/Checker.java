@@ -104,4 +104,14 @@ public class Checker{
 
 		throw new IllegalAccessError(String.format("BAD release (%s <- %s)\n", o, ct));
 	}
+
+	public synchronized void releaseAndStart(Runnable r){
+		release(r);
+		new Thread(r).start();
+	}
+
+	public synchronized void releaseAndStart(Thread t){
+		release(t);
+		t.start();
+	}
 }
