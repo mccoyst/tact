@@ -127,6 +127,8 @@ class Injector{
 			FieldInstruction fi = (FieldInstruction)code;
 			if(fi.getFieldName(cp).equals("this$0"))
 				return null; // skip inner class's outer reference
+			if(mg.getName().equals("<init>"))
+				return null; // safe to put fields in constructor?
 			return new RefCheckInserter(fi, h);
 		}else if(code instanceof PUTSTATIC){
 			return new StaticRefCheckInserter((PUTSTATIC)code, h);
