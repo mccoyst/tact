@@ -119,8 +119,6 @@ class Injector{
 	private interface CheckInserter{
 		void insertCheck(String chk);
 		String guardName();
-		void insertCheck32(String chk);
-		void insertCheck64(String chk);
 	}
 
 	CheckInserter getInserter(InstructionHandle h){
@@ -134,8 +132,35 @@ class Injector{
 			return new StaticRefCheckInserter((PUTSTATIC)code, h);
 		}else if(isArrayStore(code)){
 			return new ArrayCheckInserter((ArrayInstruction)code, h);
+		}else if(code instanceof INVOKESPECIAL
+			&& ((INVOKESPECIAL)code).getMethodName(cp).equals("<init>")
+			&& isForNew(h)){ // ignore super's ctors
+			return new ConstructCheckInserter(h);
 		}
 		return null;
+	}
+
+	private boolean isForNew(InstructionHandle h){
+		int stk = -1;
+		System.err.println("-start-");
+		while(h != null){
+			Instruction code = h.getInstruction();
+
+			if(code instanceof DUP)
+				stk++; // BCEL bug: dup does not push two words.
+			else if(code instanceof StackProducer)
+				stk += ((StackProducer)code).produceStack(cp);
+			if(code instanceof StackConsumer)
+				stk -= ((StackConsumer)code).consumeStack(cp);
+
+			System.err.printf("code = %s, stack = %d\n", code, stk);
+			if(stk == 0)
+				return code instanceof NEW;
+
+			h = h.getPrev();
+		}
+
+		return false;
 	}
 	
 	private class RefCheckInserter implements CheckInserter{
@@ -254,6 +279,23 @@ class Injector{
 			insertCheckCall(h, chk);
 			list.insert(h, new DUP2_X2());
 			list.insert(h, new POP2());
+		}
+
+		public String guardName(){
+			return null;
+		}
+	}
+
+	private class ConstructCheckInserter implements CheckInserter{
+		InstructionHandle h;
+		ConstructCheckInserter(InstructionHandle h){
+			this.h = h.getNext(); // ref should be on top after call to <init>
+			assert this.h != null;
+		}
+
+		public void insertCheck(String chk){
+			list.insert(h, new DUP());
+			insertCheckCall(h, chk);
 		}
 
 		public String guardName(){
