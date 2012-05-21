@@ -5,6 +5,7 @@
 package edu.unh.cs.files;
 
 import java.util.Random;
+import edu.unh.cs.tact.*;
 
 class File implements Comparable<File> {
 
@@ -32,7 +33,7 @@ public class SendFile {
 
 	public void sendFile (File f) {
 		System.err.printf("	Start sending %s by %s%n",
-											f, Thread.currentThread().getName());
+			f, Thread.currentThread().getName());
 		long time = System.currentTimeMillis();
 		try {
 			Thread.sleep(f.duration);
@@ -114,13 +115,13 @@ public class SendFile {
 	// Bounded parallelism, reusing threads
 
 	private final Worker[] workers;
-	private int activeThreads;
+	@GuardedBy("this") private int activeThreads;
 
 	public SendFile (int k) { // constructor takes the bound
 		workers = new Worker[k];
 		for (int i=0; i<k; i++) {
 			Thread t = workers[i] = new Worker("Worker "+i);
-			t.start();
+			Checker.releaseAndStart(t);
 		}
 	}
 
@@ -148,7 +149,7 @@ public class SendFile {
 		public Worker (String name) {
 			super(name);
 		}
-		private Dispatcher disp;
+		@GuardedBy("this") private Dispatcher disp;
 		public synchronized void setDispatcher (Dispatcher d) {
 			disp = d;
 			notify();
@@ -179,8 +180,8 @@ public class SendFile {
 	}
 
 	private static class Dispatcher {
-		private int next;
-		private File[] files;
+		@GuardedBy("this") private int next;
+		@GuardedBy("this") private File[] files;
 
 		public Dispatcher (File[] files) {
 			this.files = files;
