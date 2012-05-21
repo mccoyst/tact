@@ -144,7 +144,6 @@ class Injector{
 
 	private boolean isForNew(InstructionHandle h){
 		int stk = -1;
-		System.err.println("-start-");
 		while(h != null){
 			Instruction code = h.getInstruction();
 
@@ -155,7 +154,6 @@ class Injector{
 			if(code instanceof StackConsumer)
 				stk -= ((StackConsumer)code).consumeStack(cp);
 
-			System.err.printf("code = %s, stack = %d\n", code, stk);
 			if(stk == 0)
 				return code instanceof NEW;
 
