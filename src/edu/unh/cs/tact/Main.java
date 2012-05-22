@@ -55,13 +55,18 @@ class Main{
 				new FileOutputStream(jar.getName()+".new"),
 				jar.getManifest());
 			for(JarEntry entry : Collections.list(jar.entries())){
-				if(entry.isDirectory() || !entry.getName().endsWith(".class"))
+				String name = entry.getName();
+				if(entry.isDirectory() || name.startsWith("META-INF/MANIFEST"))
 					continue;
 
 				try{
 					in = jar.getInputStream(entry);
-					out.putNextEntry(new JarEntry(entry.getName()));
-					inject(in, out, entry.getName());
+					out.putNextEntry(new JarEntry(name));
+
+					if(name.endsWith(".class"))
+						inject(in, out, entry.getName());
+					else
+						copy(in, out);
 				}finally{
 					if(in != null) in.close();
 				}
@@ -135,5 +140,15 @@ class Main{
 			if(file != null) file.close();
 		}
 		throw new AssertionError("Shouldn't get here");
+	}
+
+	private static void copy(InputStream in, OutputStream out) throws Exception{
+		byte[] buf = new byte[1024];
+		while(true){
+			int n = in.read(buf);
+			if(n == -1)
+				break;
+			out.write(buf, 0, n);
+		}
 	}
 }
