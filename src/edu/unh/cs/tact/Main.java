@@ -14,16 +14,7 @@ class Main{
 	public static void main(String[] args) throws Exception{
 		ArrayList<String> classes = new ArrayList<String>();
 		for(String arg : args){
-			if(arg.equals("-break")){
-				BreakMe.codeToBreak();
-				return;
-			}else if(arg.equals("-work")){
-				BreakMe.codeThatWorks();
-				return;
-			}else if(arg.equals("-pi")){
-				BreakMe.pi();
-				return;
-			}else if(arg.equals("-loud")){
+			if(arg.equals("-loud")){
 				loud = true;
 				continue;
 			}
