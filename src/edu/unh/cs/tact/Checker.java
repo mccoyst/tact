@@ -105,13 +105,20 @@ public class Checker{
 		throw new IllegalAccessError(String.format("BAD release (%s <- %s)\n", o, ct));
 	}
 
+
 	public static synchronized void releaseAndStart(Runnable r){
-		release(r);
-		new Thread(r).start();
+		Thread t = new Thread(r);
+		giveTo(r, t);
+		t.start();
 	}
 
 	public static synchronized void releaseAndStart(Thread t){
-		release(t);
+		giveTo(t, t);
 		t.start();
+	}
+
+	private static synchronized void giveTo(Object o, Thread t){
+		release(o);
+		owners.put(o, new WeakReference<Thread>(t));
 	}
 }
