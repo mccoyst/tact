@@ -1,7 +1,7 @@
 Tact
 ====
 
-Tact is a program and Java package that inserts runtime
+Tact is a Java 6 program and package that inserts runtime
 checks into Java bytecode. The goal of these checks is to aid
 the development of multi-threaded programs by ensuring
 that only the intended threads access any object, either by
@@ -34,7 +34,7 @@ used by files.jar and the Hello class with the following strategy:
 > IllegalAccessError.
 
 This is strict, but the goal is to catch unintended object accesses.
-This is also impractical every multi-threaded program, because they all
+This is also impractical for every multi-threaded program, because they all
 have to create Thread objects before starting them. So,
 other strategies can be specified in the program's source with
 the unh.edu.cs.tact pacakge. The first aid is the Checker.releaseAndStart()
