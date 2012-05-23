@@ -18,7 +18,7 @@ public class Checker{
 
 		if(ref == null){
 			owners.put(o, new WeakReference<Thread>(ct));
-//			System.err.printf("OK claim \"%s\" -> %s\n", o, ct);
+			//System.err.printf("OK claim \"%s\" -> %s\n", o, ct);
 			return;
 		}
 
@@ -27,7 +27,7 @@ public class Checker{
 			throw new IllegalAccessError(String.format("BAD re-thread \"%s\" -> %s\n", o, ct));
 
 		if(owner.equals(ct)){
-//			System.err.printf("OK access (%s -> %s)\n", o, ct);
+			//System.err.printf("OK access (%s -> %s)\n", o, ct);
 			return;
 		}
 
@@ -56,13 +56,13 @@ public class Checker{
 
 		Thread owner = ref.get();
 		if(owner == null){
-//			System.err.printf("OK release-again (%s <- %s)", o, ct);
+			//System.err.printf("OK release-again (%s <- %s)", o, ct);
 			return;
 		}
 
 		if(owner.equals(ct)){
 			owners.remove(o);
-//			System.err.printf("OK release (%s <- %s)\n", o, ct);
+			//System.err.printf("OK release (%s <- %s)\n", o, ct);
 			return;
 		}
 
