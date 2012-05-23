@@ -76,21 +76,6 @@ class Injector{
 		);
 	}
 
-	private boolean isReadOnly(FieldInstruction pf){
-		JavaClass jc = classFor(pf);
-		if(jc == null)
-			return false;
-		Field f = fieldFor(jc, pf);
-		if(f == null)
-			return false;
-
-		for(AnnotationEntry ae : f.getAnnotationEntries()){
-			if(ae.getAnnotationType().equals("Ledu/unh/cs/tact/ReadOnly;"))
-				return true;
-		}
-		return false;
-	}
-
 	private JavaClass classFor(FieldInstruction fi){
 		ReferenceType rt = fi.getReferenceType(cp);
 		if(!(rt instanceof ObjectType))
@@ -110,10 +95,6 @@ class Injector{
 				return f;
 		}
 		return null;
-	}
-
-	private boolean isReadOnly(ArrayInstruction pa){
-		return false;
 	}
 
 	private interface CheckInserter{
