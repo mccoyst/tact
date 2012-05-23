@@ -70,13 +70,13 @@ public class Checker{
 	}
 
 
-	public static synchronized void releaseAndStart(Runnable r){
+	public static void releaseAndStart(Runnable r){
 		Thread t = new Thread(r);
 		giveTo(r, t);
 		t.start();
 	}
 
-	public static synchronized void releaseAndStart(Thread t){
+	public static void releaseAndStart(Thread t){
 		giveTo(t, t);
 		t.start();
 	}
