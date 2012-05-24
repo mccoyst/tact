@@ -113,27 +113,23 @@ class Injector{
 			return new StaticRefCheckInserter((PUTSTATIC)code, h);
 		}else if(isArrayStore(code)){
 			return new ArrayCheckInserter((ArrayInstruction)code, h);
-		}else if(code instanceof INVOKESPECIAL
-			&& ((INVOKESPECIAL)code).getMethodName(cp).equals("<init>")
-			&& isForNew(h)){ // ignore super's ctors
+		}else if(isForNew(code, h)){ // ignore super's ctors
 			return new ConstructCheckInserter(h);
 		}
 		return null;
 	}
 
-	private boolean isForNew(InstructionHandle h){
-		int stk = -1;
+	private boolean isForNew(Instruction code, InstructionHandle h){
+		if(!(code instanceof INVOKESPECIAL))
+			return false;
+
+		int stk = 0;
 		while(h != null){
-			Instruction code = h.getInstruction();
+			code = h.getInstruction();
 
-			if(code instanceof DUP)
-				stk++; // BCEL bug: dup does not push two words.
-			else if(code instanceof StackProducer)
-				stk += ((StackProducer)code).produceStack(cp);
-			if(code instanceof StackConsumer)
-				stk -= ((StackConsumer)code).consumeStack(cp);
-
-			if(stk == 0)
+			stk += code.produceStack(cp);
+			stk -= code.consumeStack(cp);
+			if(stk == 1)
 				return code instanceof NEW;
 
 			h = h.getPrev();
