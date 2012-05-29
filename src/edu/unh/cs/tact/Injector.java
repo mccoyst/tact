@@ -109,8 +109,13 @@ class Injector{
 			if(fi.getFieldName(cp).equals("this$0"))
 				return null; // skip inner class's outer reference
 			return new RefCheckInserter(fi, h);
-		}else if(code instanceof PUTSTATIC){
-			return new StaticRefCheckInserter((PUTSTATIC)code, h);
+		}else if(code instanceof GETFIELD){
+			FieldInstruction fi = (FieldInstruction)code;
+			if(fi.getFieldName(cp).equals("this$0"))
+				return null; // skip inner class's outer reference
+			return new GetRefCheckInserter(fi, h);
+		}else if(code instanceof PUTSTATIC || code instanceof GETSTATIC){
+			return new StaticRefCheckInserter((FieldInstruction)code, h);
 		}else if(isArrayStore(code)){
 			return new ArrayCheckInserter((ArrayInstruction)code, h);
 		}else if(isForNew(code, h)){ // ignore super's ctors
@@ -197,15 +202,28 @@ class Injector{
 		}
 	}
 
-	private class StaticRefCheckInserter extends RefCheckInserter{
-		PUTSTATIC ps;
-		StaticRefCheckInserter(PUTSTATIC ps, InstructionHandle h){
-			super(ps, h);
-			this.ps = ps;
+	private class GetRefCheckInserter extends RefCheckInserter{
+		public GetRefCheckInserter(FieldInstruction code, InstructionHandle h){
+			super(code, h);
 		}
 
 		@Override public void insertCheck32(String chk){
-			int i = ps.getIndex();
+			list.insert(h, f.createDup(1));
+			insertCheckCall(h, chk);
+		}
+
+		@Override public void insertCheck64(String chk){
+			insertCheck32(chk);
+		}
+	}
+
+	private class StaticRefCheckInserter extends RefCheckInserter{
+		public StaticRefCheckInserter(FieldInstruction code, InstructionHandle h){
+			super(code, h);
+		}
+
+		@Override public void insertCheck32(String chk){
+			int i = pf.getIndex();
 			Constant c = cp.getConstant(i);
 			if(!(c instanceof ConstantFieldref))
 				throw new AssertionError("Flawed static field check");
