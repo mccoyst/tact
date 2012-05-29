@@ -102,7 +102,7 @@ class Injector{
 		String guardName();
 	}
 
-	CheckInserter getInserter(InstructionHandle h){
+	private CheckInserter getInserter(InstructionHandle h){
 		Instruction code = h.getInstruction();
 		if(code instanceof PUTFIELD){
 			FieldInstruction fi = (FieldInstruction)code;
