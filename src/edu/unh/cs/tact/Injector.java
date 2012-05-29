@@ -104,17 +104,15 @@ class Injector{
 
 	private CheckInserter getInserter(InstructionHandle h){
 		Instruction code = h.getInstruction();
-		if(code instanceof PUTFIELD){
+		if(code instanceof PUTFIELD || code instanceof GETFIELD){
 			FieldInstruction fi = (FieldInstruction)code;
 			if(fi.getFieldName(cp).equals("this$0"))
 				return null; // skip inner class's outer reference
+
+			if(code instanceof GETFIELD)
+				return new GetRefCheckInserter(fi, h);
+
 			return new RefCheckInserter(fi, h);
-		}
-		if(code instanceof GETFIELD){
-			FieldInstruction fi = (FieldInstruction)code;
-			if(fi.getFieldName(cp).equals("this$0"))
-				return null; // skip inner class's outer reference
-			return new GetRefCheckInserter(fi, h);
 		}
 		if(code instanceof PUTSTATIC || code instanceof GETSTATIC){
 			return new StaticRefCheckInserter((FieldInstruction)code, h);
