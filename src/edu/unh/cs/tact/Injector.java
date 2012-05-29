@@ -109,16 +109,20 @@ class Injector{
 			if(fi.getFieldName(cp).equals("this$0"))
 				return null; // skip inner class's outer reference
 			return new RefCheckInserter(fi, h);
-		}else if(code instanceof GETFIELD){
+		}
+		if(code instanceof GETFIELD){
 			FieldInstruction fi = (FieldInstruction)code;
 			if(fi.getFieldName(cp).equals("this$0"))
 				return null; // skip inner class's outer reference
 			return new GetRefCheckInserter(fi, h);
-		}else if(code instanceof PUTSTATIC || code instanceof GETSTATIC){
+		}
+		if(code instanceof PUTSTATIC || code instanceof GETSTATIC){
 			return new StaticRefCheckInserter((FieldInstruction)code, h);
-		}else if(isArrayStore(code)){
+		}
+		if(isArrayStore(code)){
 			return new ArrayCheckInserter((ArrayInstruction)code, h);
-		}else if(isForNew(code, h)){ // ignore super's ctors
+		}
+		if(isForNew(code, h)){ // ignore super's ctors
 			return new ConstructCheckInserter(h);
 		}
 		return null;
