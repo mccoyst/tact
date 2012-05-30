@@ -24,7 +24,7 @@ class Injector{
 		this.cp = notNull(cp, "cp");
 	}
 
-	public boolean insertChecks(){
+	public boolean inject(){
 		boolean changed = false;
 		InstructionHandle end = this.end.getNext();
 		for(InstructionHandle h = begin; h != end; h = h.getNext()){

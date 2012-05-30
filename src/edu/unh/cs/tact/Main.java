@@ -110,7 +110,7 @@ class Main{
 				System.err.printf("Injecting %s.%s\n", jc.getClassName(), methods[i]);
 
 			MethodGen mg = new MethodGen(methods[i], jc.getClassName(), cp);
-			boolean changed = new Injector(cp, insf, mg).insertChecks();
+			boolean changed = new Injector(cp, insf, mg).inject();
 			methods[i] = mg.getMethod();
 
 			if(loud && changed){
