@@ -171,9 +171,14 @@ public class SendFile {
 				} catch (InterruptedException e) {
 					return; // termination
 				}
-				File f;
-				while ((f = disp.nextFile()) != null)
+				while(true){
+					Dispatcher d = null;
+					synchronized(this){ d = disp; }
+					File f = d.nextFile();
+					if(f == null)
+						break;
 					sendFile(f);
+				}
 				doneWorking();
 			}
 		}
