@@ -253,7 +253,7 @@ class Injector{
 
 		public void insert32(Check chk){
 			list.insert(h, new SWAP());
-			list.insert(h, f.createDup(1));
+			list.insert(h, new DUP());
 			chk.insert(h);
 			list.insert(h, new SWAP());
 		}
@@ -272,7 +272,7 @@ class Injector{
 		}
 
 		@Override public void insert32(Check chk){
-			list.insert(h, f.createDup(1));
+			list.insert(h, new DUP());
 			chk.insert(h);
 		}
 
