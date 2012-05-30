@@ -45,77 +45,12 @@ class Injector{
 		return changed;
 	}
 
-	private boolean isArrayStore(Instruction h){
-		return h instanceof AASTORE
-			|| h instanceof BASTORE
-			|| h instanceof CASTORE
-			|| h instanceof DASTORE
-			|| h instanceof FASTORE
-			|| h instanceof IASTORE
-			|| h instanceof LASTORE
-			|| h instanceof SASTORE
-			;
+	private interface CheckInserter{
+		void insertCheck(Check chk);
 	}
 
 	private interface Check{
 		void insert(InstructionHandle h);
-	}
-
-	private class Strict implements Check{
-		public void insert(InstructionHandle h){
-			assert h != null;
-			list.insert(
-				h,
-				f.createInvoke(
-					"edu.unh.cs.tact.Checker",
-					"check",
-					Type.VOID,
-					new Type[]{ Type.OBJECT },
-					Constants.INVOKESTATIC
-				)
-			);
-		}
-	}
-
-	private class ThisGuard implements Check{
-		public void insert(InstructionHandle h){
-			assert h != null;
-			list.insert(
-				h,
-				f.createInvoke(
-					"edu.unh.cs.tact.Checker",
-					"guardByThis",
-					Type.VOID,
-					new Type[]{ Type.OBJECT },
-					Constants.INVOKESTATIC
-				)
-			);
-		}
-	}
-
-	private JavaClass classFor(FieldInstruction fi){
-		ReferenceType rt = fi.getReferenceType(cp);
-		if(!(rt instanceof ObjectType))
-			return null;
-
-		ObjectType ot = (ObjectType)rt;
-		try{
-			return Repository.lookupClass(ot.getClassName());
-		}catch(ClassNotFoundException e){
-			throw new RuntimeException(e);
-		}
-	}
-
-	private Field fieldFor(JavaClass jc, FieldInstruction fi){
-		for(Field f : jc.getFields()){
-			if(f.getName().equals(fi.getFieldName(cp)))
-				return f;
-		}
-		return null;
-	}
-
-	private interface CheckInserter{
-		void insertCheck(Check chk);
 	}
 
 	private CheckInserter getInserter(InstructionHandle h){
@@ -164,16 +99,16 @@ class Injector{
 		return null;
 	}
 
-	private String guardName(Field f){
-		for(AnnotationEntry ae : f.getAnnotationEntries()){
-			if(!ae.getAnnotationType().equals("Ledu/unh/cs/tact/GuardedBy;"))
-				continue;
-
-			for(ElementValuePair ev : ae.getElementValuePairs())
-				if(ev.getNameString().equals("value"))
-					return ev.getValue().stringifyValue();
-		}
-		return null;
+	private boolean isArrayStore(Instruction h){
+		return h instanceof AASTORE
+			|| h instanceof BASTORE
+			|| h instanceof CASTORE
+			|| h instanceof DASTORE
+			|| h instanceof FASTORE
+			|| h instanceof IASTORE
+			|| h instanceof LASTORE
+			|| h instanceof SASTORE
+			;
 	}
 
 	private boolean isForNew(Instruction code, InstructionHandle h){
@@ -194,7 +129,74 @@ class Injector{
 
 		return false;
 	}
-	
+
+	private JavaClass classFor(FieldInstruction fi){
+		ReferenceType rt = fi.getReferenceType(cp);
+		if(!(rt instanceof ObjectType))
+			return null;
+
+		ObjectType ot = (ObjectType)rt;
+		try{
+			return Repository.lookupClass(ot.getClassName());
+		}catch(ClassNotFoundException e){
+			throw new RuntimeException(e);
+		}
+	}
+
+	private Field fieldFor(JavaClass jc, FieldInstruction fi){
+		for(Field f : jc.getFields()){
+			if(f.getName().equals(fi.getFieldName(cp)))
+				return f;
+		}
+		return null;
+	}
+
+	private String guardName(Field f){
+		for(AnnotationEntry ae : f.getAnnotationEntries()){
+			if(!ae.getAnnotationType().equals("Ledu/unh/cs/tact/GuardedBy;"))
+				continue;
+
+			for(ElementValuePair ev : ae.getElementValuePairs())
+				if(ev.getNameString().equals("value"))
+					return ev.getValue().stringifyValue();
+		}
+		return null;
+	}
+
+
+	private class Strict implements Check{
+		public void insert(InstructionHandle h){
+			assert h != null;
+			list.insert(
+				h,
+				f.createInvoke(
+					"edu.unh.cs.tact.Checker",
+					"check",
+					Type.VOID,
+					new Type[]{ Type.OBJECT },
+					Constants.INVOKESTATIC
+				)
+			);
+		}
+	}
+
+	private class ThisGuard implements Check{
+		public void insert(InstructionHandle h){
+			assert h != null;
+			list.insert(
+				h,
+				f.createInvoke(
+					"edu.unh.cs.tact.Checker",
+					"guardByThis",
+					Type.VOID,
+					new Type[]{ Type.OBJECT },
+					Constants.INVOKESTATIC
+				)
+			);
+		}
+	}
+
+
 	private class RefCheckInserter implements CheckInserter{
 		FieldInstruction pf;
 		InstructionHandle h;
