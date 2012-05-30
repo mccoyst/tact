@@ -32,12 +32,8 @@ class Injector{
 			if(ins == null)
 				continue;
 
-			String chk = "check";
-			String guard = ins.guardName();
-			if(guard != null){
-				// TODO: guards other than this
-				chk = "guardByThis";
-			}
+			Check chk = getCheck(h);
+			assert chk != null;
 
 			ins.insertCheck(chk);
 			changed = true;
@@ -61,19 +57,40 @@ class Injector{
 			;
 	}
 
-	private void insertCheckCall(InstructionHandle h, String chk){
-		assert h != null;
-		assert chk != null;
-		list.insert(
-			h,
-			f.createInvoke(
-				"edu.unh.cs.tact.Checker",
-				chk,
-				Type.VOID,
-				new Type[]{ Type.OBJECT },
-				Constants.INVOKESTATIC
-			)
-		);
+	private interface Check{
+		void insert(InstructionHandle h);
+	}
+
+	private class Strict implements Check{
+		public void insert(InstructionHandle h){
+			assert h != null;
+			list.insert(
+				h,
+				f.createInvoke(
+					"edu.unh.cs.tact.Checker",
+					"check",
+					Type.VOID,
+					new Type[]{ Type.OBJECT },
+					Constants.INVOKESTATIC
+				)
+			);
+		}
+	}
+
+	private class ThisGuard implements Check{
+		public void insert(InstructionHandle h){
+			assert h != null;
+			list.insert(
+				h,
+				f.createInvoke(
+					"edu.unh.cs.tact.Checker",
+					"guardByThis",
+					Type.VOID,
+					new Type[]{ Type.OBJECT },
+					Constants.INVOKESTATIC
+				)
+			);
+		}
 	}
 
 	private JavaClass classFor(FieldInstruction fi){
@@ -98,8 +115,7 @@ class Injector{
 	}
 
 	private interface CheckInserter{
-		void insertCheck(String chk);
-		String guardName();
+		void insertCheck(Check chk);
 	}
 
 	private CheckInserter getInserter(InstructionHandle h){
@@ -122,6 +138,40 @@ class Injector{
 		}
 		if(isForNew(code, h)){ // ignore super's ctors
 			return new ConstructCheckInserter(h);
+		}
+		return null;
+	}
+
+	private Check getCheck(InstructionHandle h){
+		Instruction code = h.getInstruction();
+		if(!(code instanceof FieldInstruction))
+			return new Strict();
+
+		FieldInstruction pf = (FieldInstruction)code;
+		JavaClass jc = classFor(pf);
+		if(jc == null)
+			return null;
+
+		Field f = fieldFor(jc, pf);
+		if(f == null)
+			return null;
+
+		String guard = guardName(f);
+		if(guard == null)
+			return new Strict();
+		if(guard.equals("this"))
+			return new ThisGuard();
+		return null;
+	}
+
+	private String guardName(Field f){
+		for(AnnotationEntry ae : f.getAnnotationEntries()){
+			if(!ae.getAnnotationType().equals("Ledu/unh/cs/tact/GuardedBy;"))
+				continue;
+
+			for(ElementValuePair ev : ae.getElementValuePairs())
+				if(ev.getNameString().equals("value"))
+					return ev.getValue().stringifyValue();
 		}
 		return null;
 	}
@@ -153,8 +203,8 @@ class Injector{
 			this.h = h;
 		}
 
-		public void insertCheck(String chk){
-			if(mg.getName().equals("<init>") && chk.equals("guardByThis"))
+		public void insertCheck(Check chk){
+			if(mg.getName().equals("<init>") && chk instanceof ThisGuard)
 				return;
 
 			switch(pf.getType(cp).getSize()){
@@ -169,38 +219,18 @@ class Injector{
 			}
 		}
 
-		public void insertCheck32(String chk){
+		public void insertCheck32(Check chk){
 			list.insert(h, new SWAP());
 			list.insert(h, f.createDup(1));
-			insertCheckCall(h, chk);
+			chk.insert(h);
 			list.insert(h, new SWAP());
 		}
 
-		public void insertCheck64(String chk){
+		public void insertCheck64(Check chk){
 			list.insert(h, new DUP2_X1());
 			list.insert(h, new POP2());
 			list.insert(h, new DUP_X2());
-			insertCheckCall(h, chk);
-		}
-
-		public String guardName(){
-			JavaClass jc = classFor(pf);
-			if(jc == null)
-				return null;
-	
-			Field f = fieldFor(jc, pf);
-			if(f == null)
-				return null;
-	
-			for(AnnotationEntry ae : f.getAnnotationEntries()){
-				if(!ae.getAnnotationType().equals("Ledu/unh/cs/tact/GuardedBy;"))
-					continue;
-	
-				for(ElementValuePair ev : ae.getElementValuePairs())
-					if(ev.getNameString().equals("value"))
-						return ev.getValue().stringifyValue();
-			}
-			return null;
+			chk.insert(h);
 		}
 	}
 
@@ -209,12 +239,12 @@ class Injector{
 			super(code, h);
 		}
 
-		@Override public void insertCheck32(String chk){
+		@Override public void insertCheck32(Check chk){
 			list.insert(h, f.createDup(1));
-			insertCheckCall(h, chk);
+			chk.insert(h);
 		}
 
-		@Override public void insertCheck64(String chk){
+		@Override public void insertCheck64(Check chk){
 			insertCheck32(chk);
 		}
 	}
@@ -224,7 +254,7 @@ class Injector{
 			super(code, h);
 		}
 
-		@Override public void insertCheck32(String chk){
+		@Override public void insertCheck32(Check chk){
 			int i = pf.getIndex();
 			Constant c = cp.getConstant(i);
 			if(!(c instanceof ConstantFieldref))
@@ -232,10 +262,10 @@ class Injector{
 
 			ConstantFieldref cfr = (ConstantFieldref)c;
 			list.insert(h, new LDC_W(cfr.getClassIndex()));
-			insertCheckCall(h, chk);
+			chk.insert(h);
 		}
 
-		@Override public void insertCheck64(String chk){
+		@Override public void insertCheck64(Check chk){
 			// Field's size doesn't matter; we just get the class ref.
 			insertCheck32(chk);
 		}
@@ -249,7 +279,7 @@ class Injector{
 			this.h = h;
 		}
 
-		public void insertCheck(String chk){
+		public void insertCheck(Check chk){
 			switch(pa.getType(cp).getSize()){
 			case 1:
 				insertCheck32(chk);
@@ -262,25 +292,21 @@ class Injector{
 			}
 		}
 
-		public void insertCheck32(String chk){
+		public void insertCheck32(Check chk){
 			list.insert(h, new DUP2_X1());
 			list.insert(h, new POP2());
 			list.insert(h, new DUP_X2());
-			insertCheckCall(h, chk);
+			chk.insert(h);
 		}
 	
-		public void insertCheck64(String chk){
+		public void insertCheck64(Check chk){
 			list.insert(h, new DUP2_X2());
 			list.insert(h, new POP2());
 			list.insert(h, new DUP2());
 			list.insert(h, new POP());
-			insertCheckCall(h, chk);
+			chk.insert(h);
 			list.insert(h, new DUP2_X2());
 			list.insert(h, new POP2());
-		}
-
-		public String guardName(){
-			return null;
 		}
 	}
 
@@ -291,13 +317,9 @@ class Injector{
 			assert this.h != null;
 		}
 
-		public void insertCheck(String chk){
+		public void insertCheck(Check chk){
 			list.insert(h, new DUP());
-			insertCheckCall(h, chk);
-		}
-
-		public String guardName(){
-			return null;
+			chk.insert(h);
 		}
 	}
 }
