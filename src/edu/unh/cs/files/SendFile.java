@@ -216,7 +216,12 @@ public class SendFile {
 		sendAllFilesPoolWait(files, k);
 	}
 
+	private static final Object lock = new Object();
+
 	public static void main (String[] args) throws Exception {
+		Checker.guardBy(System.out, "edu.unh.cs.files.SendFile.lock");
+		Checker.guardBy(System.out, "edu.unh.cs.files.SendFile.lock");
+
 		int p = Integer.parseInt(args[0]);
 		int n = Integer.parseInt(args[1]);
 		int k = Integer.parseInt(args[2]);
