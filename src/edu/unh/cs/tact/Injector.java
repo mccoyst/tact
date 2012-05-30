@@ -104,7 +104,7 @@ class Injector{
 			return new Strict();
 		if(guard.equals("this"))
 			return new ThisGuard();
-		return null;
+		return new StaticGuard(guard);
 	}
 
 	private boolean isArrayStore(Instruction h){
@@ -198,6 +198,28 @@ class Injector{
 					"guardByThis",
 					Type.VOID,
 					new Type[]{ Type.OBJECT },
+					Constants.INVOKESTATIC
+				)
+			);
+		}
+	}
+
+	private class StaticGuard implements Check{
+		private String guard;
+		public StaticGuard(String guard){
+			this.guard = notNull(guard, "guard");
+		}
+
+		public void insert(InstructionHandle h){
+			assert h != null;
+			list.insert(h, f.createConstant(guard));
+			list.insert(
+				h,
+				f.createInvoke(
+					"edu.unh.cs.tact.Checker",
+					"guardByStatic",
+					Type.VOID,
+					new Type[]{ Type.OBJECT, Type.STRING },
 					Constants.INVOKESTATIC
 				)
 			);

@@ -4,6 +4,7 @@ package edu.unh.cs.tact;
 import java.util.*;
 import static java.util.Collections.*;
 import java.lang.ref.*;
+import java.lang.reflect.*;
 
 public class Checker{
 	private static Map<Object, WeakReference<Thread>> owners =
@@ -41,6 +42,38 @@ public class Checker{
 		if(!Thread.holdsLock(o))
 			throw new IllegalAccessError(String.format(
 				"BAD unguarded-access (%s -> %s)", o, Thread.currentThread()));
+	}
+
+	public static void guardByStatic(Object o, String guard){
+		if(o == null)
+			return;
+
+		int fieldPos = guard.lastIndexOf('.');
+		if(fieldPos == -1 || fieldPos == guard.length()-1)
+			throw new AssertionError("Bad guard name: \""+guard+"\"");
+
+		String className = guard.substring(0, fieldPos);
+		String field = guard.substring(fieldPos+1);
+
+		Object g = null;
+		try{
+			Class<?> c = Class.forName(className);
+			Field f = c.getDeclaredField(field);
+			boolean acc = f.isAccessible();
+			f.setAccessible(true);
+			g = f.get(null);
+			f.setAccessible(acc);
+		}catch(ClassNotFoundException e){
+			throw new RuntimeException(e);
+		}catch(NoSuchFieldException e){
+			throw new RuntimeException(e);
+		}catch(IllegalAccessException e){
+			throw new RuntimeException(e);
+		}
+
+		if(!Thread.holdsLock(g))
+			throw new IllegalAccessError(String.format(
+				"BAD unguarded-access [static] (%s -> %s)", o, Thread.currentThread()));
 	}
 
 	public static void release(Object o){
