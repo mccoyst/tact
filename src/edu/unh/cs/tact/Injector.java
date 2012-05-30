@@ -33,7 +33,8 @@ class Injector{
 				continue;
 
 			Check chk = getCheck(h);
-			assert chk != null;
+			if(chk == null)
+				continue;
 
 			ins.insert(chk);
 			changed = true;
@@ -97,6 +98,8 @@ class Injector{
 			return null;
 
 		String guard = guardName(f);
+		if(f.isFinal() && guard == null)
+			return null;
 		if(guard == null)
 			return new Strict();
 		if(guard.equals("this"))
