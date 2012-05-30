@@ -61,18 +61,18 @@ class Injector{
 				return null; // skip inner class's outer reference
 
 			if(code instanceof GETFIELD)
-				return new GetRefCheckInserter(fi, h);
+				return new CheckGetRef(fi, h);
 
-			return new RefCheckInserter(fi, h);
+			return new CheckPutRef(fi, h);
 		}
 		if(code instanceof PUTSTATIC || code instanceof GETSTATIC){
-			return new StaticRefCheckInserter((FieldInstruction)code, h);
+			return new CheckStatic((FieldInstruction)code, h);
 		}
 		if(isArrayStore(code)){
-			return new ArrayCheckInserter((ArrayInstruction)code, h);
+			return new CheckArrayStore((ArrayInstruction)code, h);
 		}
 		if(isForNew(code, h)){ // ignore super's ctors
-			return new ConstructCheckInserter(h);
+			return new CheckConstruct(h);
 		}
 		return null;
 	}
@@ -197,10 +197,10 @@ class Injector{
 	}
 
 
-	private class RefCheckInserter implements CheckInserter{
+	private class CheckPutRef implements CheckInserter{
 		FieldInstruction pf;
 		InstructionHandle h;
-		RefCheckInserter(FieldInstruction pf, InstructionHandle h){
+		public CheckPutRef(FieldInstruction pf, InstructionHandle h){
 			this.pf = pf;
 			this.h = h;
 		}
@@ -236,8 +236,8 @@ class Injector{
 		}
 	}
 
-	private class GetRefCheckInserter extends RefCheckInserter{
-		public GetRefCheckInserter(FieldInstruction code, InstructionHandle h){
+	private class CheckGetRef extends CheckPutRef{
+		public CheckGetRef(FieldInstruction code, InstructionHandle h){
 			super(code, h);
 		}
 
@@ -251,8 +251,8 @@ class Injector{
 		}
 	}
 
-	private class StaticRefCheckInserter extends RefCheckInserter{
-		public StaticRefCheckInserter(FieldInstruction code, InstructionHandle h){
+	private class CheckStatic extends CheckPutRef{
+		public CheckStatic(FieldInstruction code, InstructionHandle h){
 			super(code, h);
 		}
 
@@ -273,10 +273,10 @@ class Injector{
 		}
 	}
 
-	private class ArrayCheckInserter implements CheckInserter{
+	private class CheckArrayStore implements CheckInserter{
 		ArrayInstruction pa;
 		InstructionHandle h;
-		ArrayCheckInserter(ArrayInstruction pa, InstructionHandle h){
+		CheckArrayStore(ArrayInstruction pa, InstructionHandle h){
 			this.pa = pa;
 			this.h = h;
 		}
@@ -312,9 +312,9 @@ class Injector{
 		}
 	}
 
-	private class ConstructCheckInserter implements CheckInserter{
+	private class CheckConstruct implements CheckInserter{
 		InstructionHandle h;
-		ConstructCheckInserter(InstructionHandle h){
+		CheckConstruct(InstructionHandle h){
 			this.h = h.getNext(); // ref should be on top after call to <init>
 			assert this.h != null;
 		}
