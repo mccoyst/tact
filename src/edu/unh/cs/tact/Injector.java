@@ -35,7 +35,7 @@ class Injector{
 			Check chk = getCheck(h);
 			assert chk != null;
 
-			ins.insertCheck(chk);
+			ins.insert(chk);
 			changed = true;
 		}
 
@@ -45,10 +45,15 @@ class Injector{
 		return changed;
 	}
 
+	/**
+	Implementations of CheckInserter emit any necessary prologue and epilogue
+	bytecode around chk.insert().
+	*/
 	private interface CheckInserter{
-		void insertCheck(Check chk);
+		void insert(Check chk);
 	}
 
+	/** Each implementation of Check emits a call to one of Check's public methods. */
 	private interface Check{
 		void insert(InstructionHandle h);
 	}
@@ -205,30 +210,30 @@ class Injector{
 			this.h = h;
 		}
 
-		public void insertCheck(Check chk){
+		public void insert(Check chk){
 			if(mg.getName().equals("<init>") && chk instanceof ThisGuard)
 				return;
 
 			switch(pf.getType(cp).getSize()){
 			case 1:
-				insertCheck32(chk);
+				insert32(chk);
 				break;
 			case 2:
-				insertCheck64(chk);
+				insert64(chk);
 				break;
 			default:
 				assert false : "A different size of field???";
 			}
 		}
 
-		public void insertCheck32(Check chk){
+		public void insert32(Check chk){
 			list.insert(h, new SWAP());
 			list.insert(h, f.createDup(1));
 			chk.insert(h);
 			list.insert(h, new SWAP());
 		}
 
-		public void insertCheck64(Check chk){
+		public void insert64(Check chk){
 			list.insert(h, new DUP2_X1());
 			list.insert(h, new POP2());
 			list.insert(h, new DUP_X2());
@@ -241,13 +246,13 @@ class Injector{
 			super(code, h);
 		}
 
-		@Override public void insertCheck32(Check chk){
+		@Override public void insert32(Check chk){
 			list.insert(h, f.createDup(1));
 			chk.insert(h);
 		}
 
-		@Override public void insertCheck64(Check chk){
-			insertCheck32(chk);
+		@Override public void insert64(Check chk){
+			insert32(chk);
 		}
 	}
 
@@ -256,7 +261,7 @@ class Injector{
 			super(code, h);
 		}
 
-		@Override public void insertCheck32(Check chk){
+		@Override public void insert32(Check chk){
 			int i = pf.getIndex();
 			Constant c = cp.getConstant(i);
 			if(!(c instanceof ConstantFieldref))
@@ -267,9 +272,9 @@ class Injector{
 			chk.insert(h);
 		}
 
-		@Override public void insertCheck64(Check chk){
+		@Override public void insert64(Check chk){
 			// Field's size doesn't matter; we just get the class ref.
-			insertCheck32(chk);
+			insert32(chk);
 		}
 	}
 
@@ -281,27 +286,27 @@ class Injector{
 			this.h = h;
 		}
 
-		public void insertCheck(Check chk){
+		public void insert(Check chk){
 			switch(pa.getType(cp).getSize()){
 			case 1:
-				insertCheck32(chk);
+				insert32(chk);
 				break;
 			case 2:
-				insertCheck64(chk);
+				insert64(chk);
 				break;
 			default:
 				assert false : "A different size of field???";
 			}
 		}
 
-		public void insertCheck32(Check chk){
+		public void insert32(Check chk){
 			list.insert(h, new DUP2_X1());
 			list.insert(h, new POP2());
 			list.insert(h, new DUP_X2());
 			chk.insert(h);
 		}
 	
-		public void insertCheck64(Check chk){
+		public void insert64(Check chk){
 			list.insert(h, new DUP2_X2());
 			list.insert(h, new POP2());
 			list.insert(h, new DUP2());
@@ -319,7 +324,7 @@ class Injector{
 			assert this.h != null;
 		}
 
-		public void insertCheck(Check chk){
+		public void insert(Check chk){
 			list.insert(h, new DUP());
 			chk.insert(h);
 		}
