@@ -58,7 +58,6 @@ Thread holds a certain lock.
 Currently, only "this" and static members of the form 
 "full.package.and.Class.field" are accepted as guard locks. Eventually,
 instance members will be accepted, too.
-static and instance members will be accepted, too.
 
 TODO
 ----
