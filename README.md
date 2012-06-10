@@ -12,14 +12,14 @@ Example
 
 The most convenient way to run tact is on a jar:
 
-	tact.sh files.jar
+	java -jar path/to/tact.jar files.jar
 
 This will create a new file, "files.jar.new", which is just another jar,
 but with runtime checks injected into the bytecode.
 
 It's also possible to inject individual class files:
 
-	tact.sh Hello.class
+	java -jar path/to/tact.jar Hello.class
 
 Like with jars, this will create a new file with the injected bytecode.
 
