@@ -77,6 +77,9 @@ class Injector{
 		if(isArrayStore(code)){
 			return checkArrayStore((ArrayInstruction)code, h);
 		}
+		if(isArrayLoad(code)){
+			return checkArrayLoad(h);
+		}
 		if(isForNew(code, h)){ // ignore super's ctors
 			return checkConstruct(h);
 		}
@@ -116,6 +119,18 @@ class Injector{
 			|| h instanceof IASTORE
 			|| h instanceof LASTORE
 			|| h instanceof SASTORE
+			;
+	}
+
+	private boolean isArrayLoad(Instruction h){
+		return h instanceof AALOAD
+			|| h instanceof BALOAD
+			|| h instanceof CALOAD
+			|| h instanceof DALOAD
+			|| h instanceof FALOAD
+			|| h instanceof IALOAD
+			|| h instanceof LALOAD
+			|| h instanceof SALOAD
 			;
 	}
 
@@ -281,6 +296,16 @@ class Injector{
 		};
 		assert false : "A different size of element???";
 		return null;
+	}
+
+	private CheckInserter checkArrayLoad(final InstructionHandle h){
+		return new CheckInserter(){
+			public void insert(Check chk){
+				list.insert(h, new DUP2());
+				list.insert(h, new POP());
+				chk.insert(h);
+			}
+		};
 	}
 
 	private CheckInserter checkConstruct(final InstructionHandle h){
