@@ -212,8 +212,8 @@ class Injector{
 
 
 	private class CheckPutRef implements CheckInserter{
-		FieldInstruction pf;
-		InstructionHandle h;
+		private final FieldInstruction pf;
+		private final InstructionHandle h;
 		public CheckPutRef(FieldInstruction pf, InstructionHandle h){
 			this.pf = pf;
 			this.h = h;
@@ -283,8 +283,8 @@ class Injector{
 	}
 
 	private class CheckArrayStore implements CheckInserter{
-		ArrayInstruction pa;
-		InstructionHandle h;
+		private final ArrayInstruction pa;
+		private final InstructionHandle h;
 		CheckArrayStore(ArrayInstruction pa, InstructionHandle h){
 			this.pa = pa;
 			this.h = h;
@@ -322,7 +322,7 @@ class Injector{
 	}
 
 	private class CheckConstruct implements CheckInserter{
-		InstructionHandle h;
+		private final InstructionHandle h;
 		CheckConstruct(InstructionHandle h){
 			this.h = h.getNext(); // ref should be on top after call to <init>
 			assert this.h != null;
