@@ -172,57 +172,40 @@ class Injector{
 	}
 
 
+	private void insertCheck(String fname, InstructionHandle h, Type... args){
+		assert h != null;
+		list.insert(
+			h,
+			f.createInvoke(
+				"edu.unh.cs.tact.Checker",
+				fname,
+				Type.VOID,
+				args,
+				Constants.INVOKESTATIC
+			)
+		);
+	}
+
 	private class Strict implements Check{
 		public void insert(InstructionHandle h){
-			assert h != null;
-			list.insert(
-				h,
-				f.createInvoke(
-					"edu.unh.cs.tact.Checker",
-					"check",
-					Type.VOID,
-					new Type[]{ Type.OBJECT },
-					Constants.INVOKESTATIC
-				)
-			);
+			insertCheck("check", h, Type.OBJECT);
 		}
 	}
 
 	private class ThisGuard implements Check{
 		public void insert(InstructionHandle h){
-			assert h != null;
-			list.insert(
-				h,
-				f.createInvoke(
-					"edu.unh.cs.tact.Checker",
-					"guardByThis",
-					Type.VOID,
-					new Type[]{ Type.OBJECT },
-					Constants.INVOKESTATIC
-				)
-			);
+			insertCheck("guardByThis", h, Type.OBJECT);
 		}
 	}
 
 	private class StaticGuard implements Check{
-		private String guard;
+		private final String guard;
 		public StaticGuard(String guard){
 			this.guard = notNull(guard, "guard");
 		}
 
 		public void insert(InstructionHandle h){
-			assert h != null;
-			list.insert(h, f.createConstant(guard));
-			list.insert(
-				h,
-				f.createInvoke(
-					"edu.unh.cs.tact.Checker",
-					"guardByStatic",
-					Type.VOID,
-					new Type[]{ Type.OBJECT, Type.STRING },
-					Constants.INVOKESTATIC
-				)
-			);
+			insertCheck("guardByStatic", h, Type.OBJECT, Type.STRING);
 		}
 	}
 
