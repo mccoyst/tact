@@ -104,7 +104,7 @@ class Injector{
 			return new Strict();
 		if(guard.equals("this"))
 			return new ThisGuard();
-		return new StaticGuard(guard);
+		return staticGuard(guard);
 	}
 
 	private boolean isArrayStore(Instruction h){
@@ -198,16 +198,13 @@ class Injector{
 		}
 	}
 
-	private class StaticGuard implements Check{
-		private final String guard;
-		public StaticGuard(String guard){
-			this.guard = notNull(guard, "guard");
-		}
-
-		public void insert(InstructionHandle h){
-			list.insert(h, f.createConstant(guard));
-			insertCheck("guardByStatic", h, Type.OBJECT, Type.STRING);
-		}
+	private Check staticGuard(final String guard){
+		return new Check(){
+			public void insert(InstructionHandle h){
+				list.insert(h, f.createConstant(guard));
+				insertCheck("guardByStatic", h, Type.OBJECT, Type.STRING);
+			}
+		};
 	}
 
 
