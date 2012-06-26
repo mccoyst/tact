@@ -311,7 +311,7 @@ class Injector{
 	private CheckInserter checkConstruct(final InstructionHandle h){
 		return new CheckInserter(){
 			public void insert(Check chk){
-				list.insert(h, new DUP());
+				list.insert(h.getNext(), new DUP());
 				chk.insert(h);
 			}
 		};
