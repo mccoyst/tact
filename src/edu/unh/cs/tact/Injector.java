@@ -67,18 +67,18 @@ class Injector{
 				return null; // skip inner class's outer reference
 
 			if(code instanceof GETFIELD)
-				return new CheckGetRef(h);
+				return checkGetRef(h);
 
-			return new CheckPutRef(fi, h);
+			return checkPutRef(fi, h);
 		}
 		if(code instanceof PUTSTATIC || code instanceof GETSTATIC){
-			return new CheckStatic((FieldInstruction)code, h);
+			return checkStatic((FieldInstruction)code, h);
 		}
 		if(isArrayStore(code)){
-			return new CheckArrayStore((ArrayInstruction)code, h);
+			return checkArrayStore((ArrayInstruction)code, h);
 		}
 		if(isForNew(code, h)){ // ignore super's ctors
-			return new CheckConstruct(h);
+			return checkConstruct(h);
 		}
 		return null;
 	}
@@ -211,126 +211,87 @@ class Injector{
 	}
 
 
-	private class CheckPutRef implements CheckInserter{
-		private final FieldInstruction pf;
-		private final InstructionHandle h;
-		public CheckPutRef(FieldInstruction pf, InstructionHandle h){
-			this.pf = pf;
-			this.h = h;
-		}
-
-		public void insert(Check chk){
-			if(mg.getName().equals("<init>") && chk instanceof ThisGuard)
-				return;
-
-			switch(pf.getType(cp).getSize()){
-			case 1:
-				insert32(chk);
-				break;
-			case 2:
-				insert64(chk);
-				break;
-			default:
-				assert false : "A different size of field???";
+	private CheckInserter checkPutRef(FieldInstruction pf, final InstructionHandle h){
+		int fieldSize = pf.getType(cp).getSize();
+		if(fieldSize == 1) return new CheckInserter(){
+			public void insert(Check chk){
+				if(mg.getName().equals("<init>") && chk instanceof ThisGuard)
+					return;
+				list.insert(h, new SWAP());
+				list.insert(h, new DUP());
+				chk.insert(h);
+				list.insert(h, new SWAP());
 			}
-		}
-
-		public void insert32(Check chk){
-			list.insert(h, new SWAP());
-			list.insert(h, new DUP());
-			chk.insert(h);
-			list.insert(h, new SWAP());
-		}
-
-		public void insert64(Check chk){
-			list.insert(h, new DUP2_X1());
-			list.insert(h, new POP2());
-			list.insert(h, new DUP_X2());
-			chk.insert(h);
-		}
-	}
-
-	private class CheckGetRef implements CheckInserter{
-		private final InstructionHandle h;
-		public CheckGetRef(InstructionHandle h){
-			this.h = h;
-		}
-
-		public void insert(Check chk){
-			list.insert(h, new DUP());
-			chk.insert(h);
-		}
-	}
-
-	private class CheckStatic implements CheckInserter{
-		private final FieldInstruction code;
-		private final InstructionHandle h;
-		public CheckStatic(FieldInstruction code, InstructionHandle h){
-			this.code = code;
-			this.h = h;
-		}
-
-		public void insert(Check chk){
-			int i = code.getIndex();
-			Constant c = cp.getConstant(i);
-			if(!(c instanceof ConstantFieldref))
-				throw new AssertionError("Flawed static field check");
-
-			ConstantFieldref cfr = (ConstantFieldref)c;
-			list.insert(h, new LDC_W(cfr.getClassIndex()));
-			chk.insert(h);
-		}
-	}
-
-	private class CheckArrayStore implements CheckInserter{
-		private final ArrayInstruction pa;
-		private final InstructionHandle h;
-		CheckArrayStore(ArrayInstruction pa, InstructionHandle h){
-			this.pa = pa;
-			this.h = h;
-		}
-
-		public void insert(Check chk){
-			switch(pa.getType(cp).getSize()){
-			case 1:
-				insert32(chk);
-				break;
-			case 2:
-				insert64(chk);
-				break;
-			default:
-				assert false : "A different size of field???";
+		};
+		if(fieldSize == 2) return new CheckInserter(){
+			public void insert(Check chk){
+				if(mg.getName().equals("<init>") && chk instanceof ThisGuard)
+					return;
+				list.insert(h, new DUP2_X1());
+				list.insert(h, new POP2());
+				list.insert(h, new DUP_X2());
+				chk.insert(h);
 			}
-		}
-
-		public void insert32(Check chk){
-			list.insert(h, new DUP2_X1());
-			list.insert(h, new POP2());
-			list.insert(h, new DUP_X2());
-			chk.insert(h);
-		}
-	
-		public void insert64(Check chk){
-			list.insert(h, new DUP2_X2());
-			list.insert(h, new POP2());
-			list.insert(h, new DUP2());
-			list.insert(h, new POP());
-			chk.insert(h);
-			list.insert(h, new DUP2_X2());
-			list.insert(h, new POP2());
-		}
+		};
+		assert false : "A different size of field???";
+		return null;
 	}
 
-	private class CheckConstruct implements CheckInserter{
-		private final InstructionHandle h;
-		CheckConstruct(InstructionHandle h){
-			this.h = h.getNext(); // ref should be on top after call to <init>
-			assert this.h != null;
-		}
+	private CheckInserter checkGetRef(final InstructionHandle h){
+		return new CheckInserter(){
+			public void insert(Check chk){
+				list.insert(h, new DUP());
+				chk.insert(h);
+			}
+		};
+	}
 
-		public void insert(Check chk){
-			list.insert(h, new DUP());
-			chk.insert(h);
-		}
+	private CheckInserter checkStatic(final FieldInstruction code, final InstructionHandle h){
+		return new CheckInserter(){
+			public void insert(Check chk){
+				int i = code.getIndex();
+				Constant c = cp.getConstant(i);
+				if(!(c instanceof ConstantFieldref))
+					throw new AssertionError("Flawed static field check");
+
+				ConstantFieldref cfr = (ConstantFieldref)c;
+				list.insert(h, new LDC_W(cfr.getClassIndex()));
+				chk.insert(h);
+			}
+		};
+	}
+
+	private CheckInserter checkArrayStore(ArrayInstruction pa, final InstructionHandle h){
+		int elemSize = pa.getType(cp).getSize();
+		if(elemSize == 1) return new CheckInserter(){
+			public void insert(Check chk){
+				list.insert(h, new DUP2_X1());
+				list.insert(h, new POP2());
+				list.insert(h, new DUP_X2());
+				chk.insert(h);
+			}
+		};
+		if(elemSize == 2) return new CheckInserter(){
+			public void insert(Check chk){
+				list.insert(h, new DUP2_X2());
+				list.insert(h, new POP2());
+				list.insert(h, new DUP2());
+				list.insert(h, new POP());
+				chk.insert(h);
+				list.insert(h, new DUP2_X2());
+				list.insert(h, new POP2());
+			}
+		};
+		assert false : "A different size of element???";
+		return null;
+	}
+
+	private CheckInserter checkConstruct(final InstructionHandle h){
+		return new CheckInserter(){
+			public void insert(Check chk){
+				list.insert(h, new DUP());
+				chk.insert(h);
+			}
+		};
 	}
 }
