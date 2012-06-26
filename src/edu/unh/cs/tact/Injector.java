@@ -267,7 +267,7 @@ class Injector{
 	}
 
 	private class CheckGetRef implements CheckInserter{
-		InstructionHandle h;
+		private final InstructionHandle h;
 		public CheckGetRef(InstructionHandle h){
 			this.h = h;
 		}
@@ -278,13 +278,16 @@ class Injector{
 		}
 	}
 
-	private class CheckStatic extends CheckPutRef{
+	private class CheckStatic implements CheckInserter{
+		private final FieldInstruction code;
+		private final InstructionHandle h;
 		public CheckStatic(FieldInstruction code, InstructionHandle h){
-			super(code, h);
+			this.code = code;
+			this.h = h;
 		}
 
-		@Override public void insert32(Check chk){
-			int i = pf.getIndex();
+		public void insert(Check chk){
+			int i = code.getIndex();
 			Constant c = cp.getConstant(i);
 			if(!(c instanceof ConstantFieldref))
 				throw new AssertionError("Flawed static field check");
@@ -292,11 +295,6 @@ class Injector{
 			ConstantFieldref cfr = (ConstantFieldref)c;
 			list.insert(h, new LDC_W(cfr.getClassIndex()));
 			chk.insert(h);
-		}
-
-		@Override public void insert64(Check chk){
-			// Field's size doesn't matter; we just get the class ref.
-			insert32(chk);
 		}
 	}
 
