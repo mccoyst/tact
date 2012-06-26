@@ -67,7 +67,7 @@ class Injector{
 				return null; // skip inner class's outer reference
 
 			if(code instanceof GETFIELD)
-				return new CheckGetRef(fi, h);
+				return new CheckGetRef(h);
 
 			return new CheckPutRef(fi, h);
 		}
@@ -266,18 +266,15 @@ class Injector{
 		}
 	}
 
-	private class CheckGetRef extends CheckPutRef{
-		public CheckGetRef(FieldInstruction code, InstructionHandle h){
-			super(code, h);
+	private class CheckGetRef implements CheckInserter{
+		InstructionHandle h;
+		public CheckGetRef(InstructionHandle h){
+			this.h = h;
 		}
 
-		@Override public void insert32(Check chk){
+		public void insert(Check chk){
 			list.insert(h, new DUP());
 			chk.insert(h);
-		}
-
-		@Override public void insert64(Check chk){
-			insert32(chk);
 		}
 	}
 
