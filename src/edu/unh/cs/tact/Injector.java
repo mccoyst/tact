@@ -308,11 +308,12 @@ class Injector{
 		};
 	}
 
-	private CheckInserter checkConstruct(final InstructionHandle h){
+	private CheckInserter checkConstruct(InstructionHandle h){
+		final InstructionHandle hh = h.getNext();
 		return new CheckInserter(){
 			public void insert(Check chk){
-				list.insert(h.getNext(), new DUP());
-				chk.insert(h);
+				list.insert(hh, new DUP());
+				chk.insert(hh);
 			}
 		};
 	}
