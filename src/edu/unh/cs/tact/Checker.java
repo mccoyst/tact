@@ -23,7 +23,7 @@ public class Checker{
 		if(guard != null){
 			if(!Thread.holdsLock(guard))
 				throw new IllegalAccessError(String.format(
-					"BAD unguarded-access [this] (%s -> %s)",
+					"BAD unguarded-access [general] (%s -> %s)",
 					o, Thread.currentThread()));
 		}
 
