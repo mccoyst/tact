@@ -80,6 +80,9 @@ class Injector{
 		if(isArrayLoad(code)){
 			return checkArrayLoad(h);
 		}
+		if(code instanceof ARRAYLENGTH){
+			return checkGetRef(h);
+		}
 		if(isForNew(code, h)){ // ignore super's ctors
 			return checkConstruct(h);
 		}
