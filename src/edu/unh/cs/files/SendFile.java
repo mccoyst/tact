@@ -225,7 +225,7 @@ public class SendFile {
 
 	public static void main (String[] args) throws Exception {
 		Checker.guardBy(System.out, lock);
-		Checker.guardBy(System.out, lock);
+		Checker.guardBy(System.err, lock);
 
 		int p = Integer.parseInt(args[0]);
 		int n = Integer.parseInt(args[1]);
