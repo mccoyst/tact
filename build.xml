@@ -43,10 +43,10 @@
 	</target>
 
 	<target name="test" depends="jar">
-		<junit printsummary="yes">
+		<junit>
 			<classpath location="lib/${junit}.jar"/>
 			<classpath location="build"/>
-			<formatter type="plain"/>
+			<formatter type="brief"/>
 			<batchtest>
 				<fileset dir="build" includes="**/Test*.class"/>
 			</batchtest>
