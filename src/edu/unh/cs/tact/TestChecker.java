@@ -25,4 +25,14 @@ public class TestChecker{
 		Checker.guardBy(o, s);
 		Checker.guardBy(o, "I'm different!");
 	}
+
+	@Test public void goodStaticRuntimeGuard(){
+		Object o = new Object();
+		Checker.guardBy(o, TestChecker.class);
+		staticCheck(o);
+	}
+
+	private synchronized static void staticCheck(Object o){
+		Checker.check(o);
+	}
 }
