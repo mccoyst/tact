@@ -10,8 +10,8 @@ public class Checker{
 	private static Map<Object, WeakReference<Thread>> owners =
 		synchronizedMap(new WeakHashMap<Object, WeakReference<Thread>>());
 
-	private static Map<Object, String> runtimeGuarded =
-		synchronizedMap(new WeakHashMap<Object, String>());
+	private static Map<Object, Object> runtimeGuarded =
+		synchronizedMap(new WeakHashMap<Object, Object>());
 
 	public static void check(Object o){
 		if(o == null)
@@ -19,10 +19,12 @@ public class Checker{
 
 		Thread ct = Thread.currentThread();
 
-		String guard = runtimeGuarded.get(o);
+		Object guard = runtimeGuarded.get(o);
 		if(guard != null){
-			guardByStatic(o, guard);
-			return;
+			if(!Thread.holdsLock(guard))
+				throw new IllegalAccessError(String.format(
+					"BAD unguarded-access [this] (%s -> %s)",
+					o, Thread.currentThread()));
 		}
 
 		WeakReference<Thread> ref = owners.get(o);
@@ -112,8 +114,10 @@ public class Checker{
 		throw new IllegalAccessError(String.format("BAD release (%s <- %s)\n", o, ct));
 	}
 
-	public static void guardBy(Object o, String guard){
-		String oldGuard = runtimeGuarded.put(o, guard);
+	public static void guardBy(Object o, Object guard){
+		Object oldGuard =
+			runtimeGuarded.put(o, guard);
+
 		if(oldGuard != null && !oldGuard.equals(guard))
 			throw new IllegalAccessError(String.format("BAD new-guard (%s, %s -> %s)", o, oldGuard, guard));
 	}

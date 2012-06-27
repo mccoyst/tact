@@ -224,8 +224,8 @@ public class SendFile {
 	private static final Object lock = new Object();
 
 	public static void main (String[] args) throws Exception {
-		Checker.guardBy(System.out, "edu.unh.cs.files.SendFile.lock");
-		Checker.guardBy(System.out, "edu.unh.cs.files.SendFile.lock");
+		Checker.guardBy(System.out, lock);
+		Checker.guardBy(System.out, lock);
 
 		int p = Integer.parseInt(args[0]);
 		int n = Integer.parseInt(args[1]);
