@@ -1,8 +1,10 @@
 <!-- Copyright © 2012 Steve McCoy under the MIT license. -->
 
-<project name="tact" default="jar" basedir=".">
+<project name="tact" default="test" basedir=".">
 	<!-- Update this when BCEL updates. -->
 	<property name="bcel" value="bcel-6.0-SNAPSHOT"/>
+	<!-- Ditto for JUnit. -->
+	<property name="junit" value="junit-4.10"/>
 
 	<target name="init">
 		<mkdir dir="build"/>
@@ -13,11 +15,14 @@
 			<compilerarg value="-Xlint"/>
 			<compilerarg value="-g:source,lines"/>
 			<classpath location="lib/${bcel}.jar"/>
+			<classpath location="lib/${junit}.jar"/>
 		</javac>
 	</target>
 
 	<target name="jar" depends="compile">
-		<jar jarfile="${ant.project.name}.jar" basedir="build" includes="edu/unh/cs/tact/**">
+		<jar jarfile="${ant.project.name}.jar" basedir="build"
+			includes="edu/unh/cs/tact/**"
+			excludes="edu/unh/cs/tact/Test*.class">
 			<manifest>
 				<attribute name="Main-Class" value="edu.unh.cs.tact.Main"/>
 				<attribute name="Class-Path" value="lib/${bcel}.jar"/>
@@ -35,6 +40,17 @@
 				<attribute name="Class-Path" value="${ant.project.name}.jar"/>
 			</manifest>
 		</jar>
+	</target>
+
+	<target name="test" depends="jar">
+		<junit printsummary="yes">
+			<classpath location="lib/${junit}.jar"/>
+			<classpath location="build"/>
+			<formatter type="plain"/>
+			<batchtest>
+				<fileset dir="build" includes="**/Test*.class"/>
+			</batchtest>
+		</junit>
 	</target>
 
 	<target name="clean">
