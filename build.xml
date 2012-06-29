@@ -22,7 +22,7 @@
 	<target name="jar" depends="compile">
 		<jar jarfile="${ant.project.name}.jar" basedir="build"
 			includes="edu/unh/cs/tact/**"
-			excludes="edu/unh/cs/tact/Test*.class">
+			excludes="edu/unh/cs/tact/*Test.class">
 			<manifest>
 				<attribute name="Main-Class" value="edu.unh.cs.tact.Main"/>
 				<attribute name="Class-Path" value="lib/${bcel}.jar"/>
@@ -48,7 +48,7 @@
 			<classpath location="build"/>
 			<formatter type="brief"/>
 			<batchtest>
-				<fileset dir="build" includes="**/Test*.class"/>
+				<fileset dir="build" includes="**/*Test.class"/>
 			</batchtest>
 		</junit>
 	</target>
