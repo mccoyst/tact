@@ -9,6 +9,12 @@ public class TestChecker{
 		Checker.check(null);
 	}
 
+	@Test public void goodSameThread(){
+		Object o = new Object();
+		Checker.check(o);
+		Checker.check(o);
+	}
+
 	@Test public void goodRuntimeGuard(){
 		Object o = new Object();
 		String s = "I'm a guard";
@@ -34,5 +40,23 @@ public class TestChecker{
 
 	private synchronized static void staticCheck(Object o){
 		Checker.check(o);
+	}
+
+	private static class ThisDummy{
+		// tact won't actually inject this class; these are for illustration
+		@GuardedBy("this") int n;
+	}
+
+	@Test public void simpleThis(){
+		ThisDummy d = new ThisDummy();
+		synchronized(d){
+			Checker.guardByThis(d);
+		}
+	}
+
+	@Test(expected=IllegalAccessError.class)
+	public void badSimpleThis(){
+		ThisDummy d = new ThisDummy();
+		Checker.guardByThis(d);
 	}
 }
