@@ -13,4 +13,14 @@ class Util{
 
 		return t;
 	}
+
+	/** rootCause returns the original cause of a Throwable,
+	however deep it is. E.g. rootCause(new RuntimeException(new RuntimeException(new IllegalAccessError("bleh"))))
+	will return the innermost IllegalAccessError.
+	*/
+	public static Throwable rootCause(Throwable t){
+		while(t.getCause() != null)
+			t = t.getCause();
+		return t;
+	}
 }

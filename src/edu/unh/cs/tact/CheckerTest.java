@@ -27,8 +27,7 @@ public class CheckerTest{
 				}
 			});
 		}catch(RuntimeException e){
-			if(e.getCause() != null)
-				throw e.getCause();
+			throw Util.rootCause(e);
 		}
 	}
 
@@ -137,9 +136,7 @@ public class CheckerTest{
 			ThisDummy d = new ThisDummy();
 			Checker.guardByStatic(d, "i.dont.exist.Okay.fine");
 		}catch(RuntimeException r){
-			if(r.getCause() != null)
-				throw r.getCause();
-			throw r;
+			throw Util.rootCause(r);
 		}
 	}
 }
