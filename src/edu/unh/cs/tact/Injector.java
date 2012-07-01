@@ -82,6 +82,9 @@ class Injector{
 		if(isForNew(code, h)){ // ignore super's ctors
 			return checkConstruct(h);
 		}
+		if(isArrayAlloc(code)){
+			return checkConstruct(h);
+		}
 		return null;
 	}
 
@@ -150,6 +153,13 @@ class Injector{
 		}
 
 		return false;
+	}
+
+	private boolean isArrayAlloc(Instruction code){
+		return code instanceof ANEWARRAY
+			|| code instanceof MULTIANEWARRAY
+			|| code instanceof NEWARRAY
+			;
 	}
 
 	private JavaClass classFor(FieldInstruction fi){
