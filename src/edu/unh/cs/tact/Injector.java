@@ -13,21 +13,17 @@ class Injector{
 	public final InstructionFactory f;
 	public final MethodGen mg;
 	public final InstructionList list;
-	public final InstructionHandle begin, end;
 
 	public Injector(ConstantPoolGen cp, InstructionFactory f, MethodGen mg){
 		this.f = notNull(f, "f");
 		this.mg = notNull(mg, "mg");
 		this.list = mg.getInstructionList();
-		this.begin = list.getStart();
-		this.end = list.getEnd();
 		this.cp = notNull(cp, "cp");
 	}
 
 	public boolean inject(){
 		boolean changed = false;
-		InstructionHandle end = this.end.getNext();
-		for(InstructionHandle h = begin; h != end; h = h.getNext()){
+		for(InstructionHandle h = list.getStart(); h != null; h = h.getNext()){
 			CheckInserter ins = getInserter(h);
 			if(ins == null)
 				continue;
