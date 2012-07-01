@@ -25,6 +25,7 @@ public class Checker{
 				throw new IllegalAccessError(String.format(
 					"BAD unguarded-access [general] (%s -> %s)",
 					o, Thread.currentThread()));
+			return;
 		}
 
 		WeakReference<Thread> ref = owners.get(o);
