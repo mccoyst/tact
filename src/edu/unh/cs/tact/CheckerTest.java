@@ -15,6 +15,23 @@ public class CheckerTest{
 		Checker.check(o);
 	}
 
+	@Test(expected=IllegalAccessError.class)
+	public void defaultOwner() throws Throwable{
+		final Object o = new Object();
+		Checker.check(o);
+
+		try{
+			doInAnotherThread(new Runnable(){
+				public void run(){
+					Checker.check(o);
+				}
+			});
+		}catch(RuntimeException e){
+			if(e.getCause() != null)
+				throw e.getCause();
+		}
+	}
+
 	@Test public void goodRuntimeGuard(){
 		final Object o = new Object();
 		final String s = "I'm a guard";
@@ -51,13 +68,33 @@ public class CheckerTest{
 	}
 
 	private void doInAnotherThread(Runnable r){
-		Thread t = new Thread(r);
+		ExceptionGrabber g = new ExceptionGrabber(r);
+		Thread t = new Thread(g);
 		t.start();
 		try{
 			t.join();
 		}catch(InterruptedException e){
 			// hrm
 			throw new RuntimeException(e);
+		}
+		if(g.err != null)
+			throw new RuntimeException(g.err);
+	}
+
+	private static class ExceptionGrabber implements Runnable{
+		private final Runnable r;
+		public Throwable err = null;
+
+		public ExceptionGrabber(Runnable r){
+			this.r = r;
+		}
+
+		public void run(){
+			try{
+				r.run();
+			}catch(Throwable e){
+				err = e;
+			}
 		}
 	}
 
