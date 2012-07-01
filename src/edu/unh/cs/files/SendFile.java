@@ -190,6 +190,9 @@ public class SendFile {
 
 		public Dispatcher (File[] files) {
 			this.files = files;
+			synchronized(this){ // TODO: this is unecessary in constructors
+				Checker.guardBy(this.files, this);
+			}
 		}
 		public synchronized File nextFile () {
 			if (next == files.length)
