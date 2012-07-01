@@ -44,13 +44,28 @@ public class CheckerTest{
 	}
 
 	@Test public void goodStaticRuntimeGuard(){
-		Object o = new Object();
+		final Object o = new Object();
 		Checker.guardBy(o, CheckerTest.class);
-		staticCheck(o);
+		doInAnotherThread(new Runnable(){
+			public void run(){
+				staticCheck(o);
+			}
+		});
 	}
 
 	private synchronized static void staticCheck(Object o){
 		Checker.check(o);
+	}
+
+	private void doInAnotherThread(Runnable r){
+		Thread t = new Thread(r);
+		t.start();
+		try{
+			t.join();
+		}catch(InterruptedException e){
+			// hrm
+			throw new RuntimeException(e);
+		}
 	}
 
 	private static class ThisDummy{
