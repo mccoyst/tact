@@ -19,20 +19,13 @@ public class CheckerTest{
 		final Object o = new Object();
 		final String s = "I'm a guard";
 		Checker.guardBy(o, s);
-		Thread t = new Thread(new Runnable(){
+		doInAnotherThread(new Runnable(){
 			public void run(){
 				synchronized(s){
 					Checker.check(o);
 				}
 			}
 		});
-		t.start();
-		try{
-			t.join();
-		}catch(InterruptedException e){
-			// hrm
-			throw new RuntimeException(e);
-		}
 	}
 
 	@Test(expected=IllegalAccessError.class)
