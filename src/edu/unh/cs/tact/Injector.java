@@ -22,6 +22,9 @@ class Injector{
 	}
 
 	public boolean inject(){
+		if(mg.getName().equals("finalize"))
+			return false;
+
 		boolean changed = false;
 		for(InstructionHandle h = list.getStart(); h != null; h = h.getNext()){
 			CheckInserter ins = getInserter(h);

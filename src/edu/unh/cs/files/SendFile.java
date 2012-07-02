@@ -30,6 +30,10 @@ class File implements Comparable<File> {
 
 public class SendFile {
 
+	// Verify the injector doesn't add checks.
+	@Override protected void finalize(){
+		Object o = new Object();
+	}
 
 	public void sendFile (File f) {
 		System.err.printf("	Start sending %s by %s%n",
