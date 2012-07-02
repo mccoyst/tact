@@ -57,7 +57,13 @@ Thread holds a certain lock.
 
 Currently, only "this" and static members of the form 
 "full.package.and.Class.field" are accepted as guard locks. Eventually,
-instance members will be accepted, too.
+instance members will be accepted, too. Oftentimes, these
+compile-time guards are insufficient. A runtime method exists to fill
+this role:
+
+	Checker.guardBy(obj, guard);
+	synchronized(guard){ obj.field = 7; } // OK
+	obj.field = 13; // throws IllegalAccessError
 
 TODO
 ----
