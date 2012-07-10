@@ -8,7 +8,7 @@ import java.lang.reflect.*;
 
 public class Checker{
 	private static Map<Object, WeakReference<Thread>> owners =
-		synchronizedMap(new WeakHashMap<Object, WeakReference<Thread>>());
+		synchronizedMap(new ThreadMap());
 
 	private static Map<Object, Object> runtimeGuarded =
 		synchronizedMap(new WeakHashMap<Object, Object>());
