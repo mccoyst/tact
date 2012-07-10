@@ -3,6 +3,7 @@ package edu.unh.cs.tact;
 
 import org.junit.*;
 import static org.junit.Assert.*;
+import java.util.*;
 
 public class CheckerTest{
 	@Test public void skipNull(){
@@ -137,6 +138,22 @@ public class CheckerTest{
 			Checker.guardByStatic(d, "i.dont.exist.Okay.fine");
 		}catch(RuntimeException r){
 			throw Util.rootCause(r);
+		}
+	}
+
+	@Test(expected=IllegalAccessError.class)
+	public void mutableObject() throws Throwable{
+		final List<Object> m = new ArrayList<Object>();
+		Checker.check(m);
+		m.add(new Object());
+		try{
+			doInAnotherThread(new Runnable(){
+				public void run(){
+					Checker.check(m);
+				}
+			});
+		}catch(RuntimeException e){
+			throw Util.rootCause(e);
 		}
 	}
 }
