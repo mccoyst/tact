@@ -42,7 +42,7 @@ public class ThreadMap extends AbstractMap<Object, WeakReference<Thread>>{
 
 			public boolean add(Map.Entry<Object, WeakReference<Thread>> e){
 				for(Entry entry : entries){
-					if(entry.getKey().get().equals(e.getKey()))
+					if(entry.getKey().get() == e.getKey())
 						return false;
 				}
 				entries.add(new Entry(e.getKey(), e.getValue()));
