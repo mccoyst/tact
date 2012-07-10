@@ -58,21 +58,4 @@ public class ThreadMap extends AbstractMap<Object, WeakReference<Thread>>{
 		entrySet().add(new AbstractMap.SimpleEntry<Object,WeakReference<Thread>>(o, t));
 		return t;
 	}
-
-
-	public static boolean equal(WeakReference<Object> r1, WeakReference<Object> r2){
-		try{
-			return r1.get().equals(r2.get());
-		}catch(NullPointerException e){
-			return false;
-		}
-	}
-
-	public static int hash(WeakReference<Object> r){
-		try{
-			return r.get().hashCode();
-		}catch(NullPointerException e){
-			return 0;
-		}
-	}
 }

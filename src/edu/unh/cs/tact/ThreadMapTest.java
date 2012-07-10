@@ -8,16 +8,6 @@ import java.util.*;
 import java.lang.ref.*;
 
 public class ThreadMapTest{
-	@Test public void assumptions(){
-		Object o = new Object();
-		WeakReference<Object> r1 = new WeakReference<Object>(o);
-		WeakReference<Object> r2 = new WeakReference<Object>(o);
-		//assertEquals(r1, r2); Nope
-		ThreadMap.equal(r1, r2);
-		//assertEquals(r1.hashCode(), r2.hashCode()); Nope
-		assertEquals(ThreadMap.hash(r1), ThreadMap.hash(r2));
-	}
-
 	@Test public void create(){
 		new ThreadMap();
 	}
