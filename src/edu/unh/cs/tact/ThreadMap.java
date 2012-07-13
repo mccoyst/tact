@@ -4,58 +4,136 @@ package edu.unh.cs.tact;
 import java.util.*;
 import java.lang.ref.*;
 
-public class ThreadMap extends AbstractMap<Object, WeakReference<Thread>>{
-	private static class Entry extends
-		AbstractMap.SimpleEntry<WeakReference<Object>, WeakReference<Thread>>{
-		public Entry(Object key, WeakReference<Thread> value){
-			super(new WeakReference<Object>(key), value);
+public class ThreadMap implements Map<Object, WeakReference<Thread>>{
+	public WeakReference<Thread> put(Object key, WeakReference<Thread> value){
+		Bucket b = lookup(key);
+		if(b == null){
+			b = new Bucket();
+			attach(key, b);
+		}
+		return b.add(key, value);
+	}
+
+	public WeakReference<Thread> get(Object key){
+		Bucket b = lookup(key);
+		if(b == null)
+			return null;
+		return b.get(key);
+	}
+
+	public WeakReference<Thread> remove(Object key){
+		Bucket b = lookup(key);
+		if(b == null)
+			return null;
+		return b.remove(key);
+	}
+
+	private void attach(Object key, Bucket b){
+		table[System.identityHashCode(key) % table.length] = b;
+	}
+
+	private Bucket lookup(Object key){
+		return table[System.identityHashCode(key) % table.length];
+	}
+
+	private final Bucket[] table = new Bucket[4096];
+
+	private static class Bucket{
+		List<Entry> entries = new ArrayList<Entry>();
+
+		public WeakReference<Thread> add(Object key, WeakReference<Thread> value){
+			Entry e = find(key);
+			if(e != null)
+				return e.value;
+			entries.add(new Entry(key, value));
+			return null;
+		}
+
+		public WeakReference<Thread> get(Object key){
+			Entry e = find(key);
+			if(e != null)
+				return e.value;
+			return null;
+		}
+
+		public WeakReference<Thread> remove(Object key){
+			Entry e = find(key);
+			if(e == null)
+				return null;
+			entries.remove(e);
+			return e.value;
+		}
+
+		private Entry find(Object key){
+			purgeDead();
+			for(Entry e : entries)
+				if(e.key.get() == key) return e;
+			return null;
+		}
+
+		private void purgeDead(){
+			List<Entry> dead = new ArrayList<Entry>();
+			for(Entry e : entries)
+				if(e.key.get() == null)
+					dead.add(e);
+			entries.removeAll(dead);
 		}
 	}
 
-	final List<Entry> entries = new ArrayList<Entry>();
+	private static class Entry{
+		public final WeakReference<Object> key;
+		public final WeakReference<Thread> value;
 
-	public Set<Map.Entry<Object, WeakReference<Thread>>> entrySet(){
-		return new AbstractSet<Map.Entry<Object, WeakReference<Thread>>>(){
-
-			public Iterator<Map.Entry<Object,WeakReference<Thread>>> iterator(){
-				final Iterator<Entry> i = entries.iterator();
-				return new Iterator<Map.Entry<Object,WeakReference<Thread>>>(){
-					public boolean hasNext(){
-						return i.hasNext();
-					}
-					public Map.Entry<Object, WeakReference<Thread>> next(){
-						//TODO: clear out empty ref entries
-						Entry e = i.next();
-						return new AbstractMap.SimpleEntry<Object, WeakReference<Thread>>(
-							e.getKey().get(), e.getValue());
-					}
-					public void remove(){
-						i.remove();
-					}
-				};
-			}
-
-			public int size(){
-				//TODO: clean up before counting
-				return entries.size();
-			}
-
-			public boolean add(Map.Entry<Object, WeakReference<Thread>> e){
-				for(Entry entry : entries){
-					if(entry.getKey().get() == e.getKey())
-						return false;
-				}
-				entries.add(new Entry(e.getKey(), e.getValue()));
-				return true;
-			}
-		};
+		public Entry(Object key, WeakReference<Thread> value){
+			this.key = new WeakReference<Object>(key);
+			this.value = value;
+		}
 	}
 
-	public WeakReference<Thread> put(Object o, WeakReference<Thread> t){
-		WeakReference<Thread> old = get(o);
-		if(old != null)
-			return old;
-		entrySet().add(new AbstractMap.SimpleEntry<Object,WeakReference<Thread>>(o, t));
-		return t;
+
+	// Junk below
+
+	public void clear(){
+		throw new UnsupportedOperationException();
+	}
+
+	public boolean containsKey(Object key){
+		throw new UnsupportedOperationException();
+	}
+
+	public boolean containsValue(Object value){
+		throw new UnsupportedOperationException();
+	}
+
+	public Set<Map.Entry<Object,WeakReference<Thread>>> entrySet(){
+		throw new UnsupportedOperationException();
+	}
+
+	public boolean equals(Object o){
+		throw new UnsupportedOperationException();
+	}
+
+	public int hashCode(){
+		throw new UnsupportedOperationException();
+	}
+
+	public boolean isEmpty(){
+		throw new UnsupportedOperationException();
+	}
+
+	public Set<Object> keySet(){
+		throw new UnsupportedOperationException();
+	}
+
+	public void putAll(Map<? extends Object, ? extends WeakReference<Thread>> m){
+		throw new UnsupportedOperationException();
+	}
+
+	public int size(){
+		throw new UnsupportedOperationException();
+	}
+
+	public Collection<WeakReference<Thread>> values(){
+		throw new UnsupportedOperationException();
 	}
 }
