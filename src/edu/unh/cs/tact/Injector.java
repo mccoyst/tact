@@ -27,6 +27,15 @@ class Injector{
 
 		boolean changed = false;
 		for(InstructionHandle h = list.getStart(); h != null; h = h.getNext()){
+			if(isCallToCheckerInit(h)){
+				try{
+					list.delete(h);
+				}catch(TargetLostException e){
+					// Nobody cares
+				}
+				continue;
+			}
+
 			CheckInserter ins = getInserter(h);
 			if(ins == null)
 				continue;
@@ -43,6 +52,23 @@ class Injector{
 			mg.setMaxStack();
 
 		return changed;
+	}
+
+	private boolean isCallToCheckerInit(InstructionHandle h){
+		Instruction i = h.getInstruction();
+		if(!(i instanceof INVOKESTATIC))
+			return false;
+
+		INVOKESTATIC call = (INVOKESTATIC) i;
+		if(!call.getMethodName(cp).equals("init"))
+			return false;
+
+		ReferenceType rt = call.getReferenceType(cp);
+		if(!(rt instanceof ObjectType))
+			return false;
+
+		ObjectType ot = (ObjectType) rt;
+		return ot.getClassName().equals("edu.unh.cs.tact.Checker");
 	}
 
 	/**

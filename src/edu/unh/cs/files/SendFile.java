@@ -231,6 +231,7 @@ public class SendFile {
 	private static final Object lock = new Object();
 
 	public static void main (String[] args) throws Exception {
+		Checker.init();
 		Checker.guardBy(System.out, lock);
 		Checker.guardBy(System.err, lock);
 

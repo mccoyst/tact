@@ -7,6 +7,8 @@ import java.lang.ref.*;
 import java.lang.reflect.*;
 
 public class Checker{
+	private static boolean enabled = true;
+
 	private static Map<Object, WeakReference<Thread>> owners =
 		synchronizedMap(new ThreadMap());
 
@@ -14,7 +16,7 @@ public class Checker{
 		synchronizedMap(new WeakHashMap<Object, Object>());
 
 	public static void check(Object o){
-		if(o == null)
+		if(!enabled || o == null)
 			return;
 
 		Thread ct = Thread.currentThread();
@@ -49,7 +51,7 @@ public class Checker{
 	}
 
 	public static void guardByThis(Object o){
-		if(o == null)
+		if(!enabled || o == null)
 			return;
 
 		if(!Thread.holdsLock(o))
@@ -58,7 +60,7 @@ public class Checker{
 	}
 
 	public static void guardByStatic(Object o, String guard){
-		if(o == null)
+		if(!enabled || o == null)
 			return;
 
 		int fieldPos = guard.lastIndexOf('.');
@@ -90,7 +92,7 @@ public class Checker{
 	}
 
 	public static void release(Object o){
-		if(o == null)
+		if(!enabled || o == null)
 			return;
 
 		Thread ct = Thread.currentThread();
@@ -116,6 +118,9 @@ public class Checker{
 	}
 
 	public static void guardBy(Object o, Object guard){
+		if(!enabled || o == null)
+			return;
+
 		Object oldGuard =
 			runtimeGuarded.put(o, guard);
 
@@ -123,6 +128,10 @@ public class Checker{
 			throw new IllegalAccessError(String.format("BAD new-guard (%s, %s -> %s)", o, oldGuard, guard));
 	}
 
+
+	public static void init(){
+		enabled = false; // TODO: Well, this name is a lie.
+	}
 
 	public static void releaseAndStart(Runnable r){
 		Thread t = new Thread(r);

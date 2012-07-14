@@ -14,14 +14,14 @@ The most convenient way to run tact is on a jar:
 
 	java -jar path/to/tact.jar files.jar
 
-This will create a new file, "files.jar.new", which is just another jar,
-but with runtime checks injected into the bytecode.
+This will inject runtime checks into the bytecode of all classes
+in files.jar.
 
 It's also possible to inject individual class files:
 
 	java -jar path/to/tact.jar Hello.class
 
-Like with jars, this will create a new file with the injected bytecode.
+Like with jars, this will inject the class's bytecode.
 
 What's Going On?
 ----------------
@@ -37,7 +37,8 @@ This is strict, but the goal is to catch unintended object accesses.
 This is also impractical for every multi-threaded program, because they all
 have to create Thread objects before starting them. So,
 other strategies can be specified in the program's source with
-the unh.edu.cs.tact pacakge. The first aid is the Checker.releaseAndStart()
+the unh.edu.cs.tact pacakge, after calling Checker.init().
+The first aid is the Checker.releaseAndStart()
 method, which atomically relinquishes the current Thread's ownership of
 a Thread or Runnable object, then starts the new Thread.
 
@@ -64,6 +65,8 @@ this role:
 	Checker.guardBy(obj, guard);
 	synchronized(guard){ obj.field = 7; } // OK
 	obj.field = 13; // throws IllegalAccessError
+
+*Remember*, Checker.init() must be called before any of these methods.
 
 TODO
 ----
