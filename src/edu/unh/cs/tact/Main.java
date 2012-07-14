@@ -41,10 +41,13 @@ class Main{
 		for(String j : jars){
 			JarFile jar = new JarFile(j);
 			inject(jar);
+			overwrite(j);
 		}
 
-		for(String cf : classes)
+		for(String cf : classes){
 			inject(cf);
+			overwrite(cf);
+		}
 	}
 
 	private static void inject(JarFile jar) throws Exception{
@@ -150,5 +153,12 @@ class Main{
 				break;
 			out.write(buf, 0, n);
 		}
+	}
+
+	private static void overwrite(String fname) throws Exception{
+		File orig = new File(fname);
+		File mod = new File(fname + ".new");
+		orig.delete();
+		mod.renameTo(orig);
 	}
 }
