@@ -79,7 +79,7 @@ public class Checker{
 			Field f = c.getDeclaredField(field);
 			boolean acc = f.isAccessible();
 			f.setAccessible(true);
-			g = f.get(null);
+			g = f.get(o);
 			f.setAccessible(acc);
 		}catch(ClassNotFoundException e){
 			throw new RuntimeException(e);

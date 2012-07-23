@@ -102,7 +102,9 @@ public class CheckerTest{
 		// tact won't actually inject this class; these are for illustration
 		@GuardedBy("this") int n;
 		@GuardedBy("edu.unh.cs.tact.CheckerTest.ThisDummy.slock") int m;
+		@GuardedBy("edu.unh.cs.tact.CheckerTest.ThisDummy.flock") int f;
 		static final Object slock = new Object();
+		final Object flock = new Object();
 	}
 
 	@Test public void goodSimpleThis(){
@@ -129,6 +131,19 @@ public class CheckerTest{
 	public void badSimpleStatic(){
 		ThisDummy d = new ThisDummy();
 		Checker.guardByStatic(d, ThisDummy.class.getName()+".slock");
+	}
+
+	@Test public void goodSimpleField(){
+		ThisDummy d = new ThisDummy();
+		synchronized(d.flock){
+			Checker.guardByStatic(d, ThisDummy.class.getName()+".flock");
+		}
+	}
+
+	@Test(expected=IllegalAccessError.class)
+	public void badSimpleField(){
+		ThisDummy d = new ThisDummy();
+		Checker.guardByStatic(d, ThisDummy.class.getName()+".flock");
 	}
 
 	@Test(expected=ClassNotFoundException.class)
