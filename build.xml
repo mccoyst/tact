@@ -28,12 +28,6 @@
 				<attribute name="Class-Path" value="lib/${bcel}.jar"/>
 			</manifest>
 		</jar>
-		<jar jarfile="pulses.jar" basedir="build" includes="edu/unh/cs/pulses/**">
-			<manifest>
-				<attribute name="Main-Class" value="edu.unh.cs.pulses.Application"/>
-				<attribute name="Class-Path" value="${ant.project.name}.jar"/>
-			</manifest>
-		</jar>
 		<jar jarfile="files.jar" basedir="build" includes="edu/unh/cs/files/**">
 			<manifest>
 				<attribute name="Main-Class" value="edu.unh.cs.files.SendFile"/>
@@ -56,7 +50,6 @@
 	<target name="clean">
 		<delete dir="build"/>
 		<delete file="${ant.project.name}.jar"/>
-		<delete file="pulses.jar"/>
 		<delete file="files.jar"/>
 	</target>
 </project>
