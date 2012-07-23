@@ -103,6 +103,7 @@ public class CheckerTest{
 		@GuardedBy("this") int n;
 		@GuardedBy("edu.unh.cs.tact.CheckerTest.ThisDummy.slock") int m;
 		@GuardedBy("edu.unh.cs.tact.CheckerTest.ThisDummy.flock") int f;
+		@GuardedBy("edu.unh.cs.tact.CheckerTest.ThisDummy.class") int c;
 		static final Object slock = new Object();
 		final Object flock = new Object();
 	}
@@ -144,6 +145,19 @@ public class CheckerTest{
 	public void badSimpleField(){
 		ThisDummy d = new ThisDummy();
 		Checker.guardByField(d, ThisDummy.class.getName()+".flock");
+	}
+
+	@Test public void goodSimpleClass(){
+		ThisDummy d = new ThisDummy();
+		synchronized(ThisDummy.class){
+			Checker.guardByField(d, ThisDummy.class.getName()+".class");
+		}
+	}
+
+	@Test(expected=IllegalAccessError.class)
+	public void badSimpleClass(){
+		ThisDummy d = new ThisDummy();
+		Checker.guardByField(d, ThisDummy.class.getName()+".class");
 	}
 
 	@Test(expected=ClassNotFoundException.class)

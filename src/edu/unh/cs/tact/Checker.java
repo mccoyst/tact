@@ -76,11 +76,15 @@ public class Checker{
 		Object g = null;
 		try{
 			Class<?> c = Class.forName(className);
-			Field f = c.getDeclaredField(field);
-			boolean acc = f.isAccessible();
-			f.setAccessible(true);
-			g = f.get(o);
-			f.setAccessible(acc);
+			if(field.equals("class"))
+				g = c;
+			else{
+				Field f = c.getDeclaredField(field);
+				boolean acc = f.isAccessible();
+				f.setAccessible(true);
+				g = f.get(o);
+				f.setAccessible(acc);
+			}
 		}catch(ClassNotFoundException e){
 			throw new RuntimeException(e);
 		}catch(NoSuchFieldException e){
