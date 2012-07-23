@@ -56,9 +56,9 @@ Thread holds a certain lock.
 	…
 	sharedData = 13; // throws IllegalAccessError
 
-Currently, only "this" and static members of the form 
-"full.package.and.Class.field" are accepted as guard locks. Eventually,
-instance members will be accepted, too. Oftentimes, these
+Only "this", static and non-staic members of the form 
+"full.package.and.Class.field", and class objects of the form 
+"full.package.and.Class.class" are accepted as guard locks. Oftentimes, these
 compile-time guards are insufficient. A runtime method exists to fill
 this role:
 
@@ -67,6 +67,7 @@ this role:
 	obj.field = 13; // throws IllegalAccessError
 
 *Remember*, Checker.init() must be called before any of these methods.
+See the JavaDoc for more methods and details.
 
 TODO
 ----
