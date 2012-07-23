@@ -123,34 +123,34 @@ public class CheckerTest{
 	@Test public void goodSimpleStatic(){
 		ThisDummy d = new ThisDummy();
 		synchronized(ThisDummy.slock){
-			Checker.guardByStatic(d, ThisDummy.class.getName()+".slock");
+			Checker.guardByField(d, ThisDummy.class.getName()+".slock");
 		}
 	}
 
 	@Test(expected=IllegalAccessError.class)
 	public void badSimpleStatic(){
 		ThisDummy d = new ThisDummy();
-		Checker.guardByStatic(d, ThisDummy.class.getName()+".slock");
+		Checker.guardByField(d, ThisDummy.class.getName()+".slock");
 	}
 
 	@Test public void goodSimpleField(){
 		ThisDummy d = new ThisDummy();
 		synchronized(d.flock){
-			Checker.guardByStatic(d, ThisDummy.class.getName()+".flock");
+			Checker.guardByField(d, ThisDummy.class.getName()+".flock");
 		}
 	}
 
 	@Test(expected=IllegalAccessError.class)
 	public void badSimpleField(){
 		ThisDummy d = new ThisDummy();
-		Checker.guardByStatic(d, ThisDummy.class.getName()+".flock");
+		Checker.guardByField(d, ThisDummy.class.getName()+".flock");
 	}
 
 	@Test(expected=ClassNotFoundException.class)
 	public void badClass() throws Throwable{
 		try{
 			ThisDummy d = new ThisDummy();
-			Checker.guardByStatic(d, "i.dont.exist.Okay.fine");
+			Checker.guardByField(d, "i.dont.exist.Okay.fine");
 		}catch(RuntimeException r){
 			throw Util.rootCause(r);
 		}

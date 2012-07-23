@@ -255,7 +255,7 @@ class Injector{
 		return new Check(){
 			public void insert(InstructionHandle h){
 				list.insert(h, f.createConstant(guard));
-				insertCheck("guardByStatic", h, Type.OBJECT, Type.STRING);
+				insertCheck("guardByField", h, Type.OBJECT, Type.STRING);
 			}
 		};
 	}

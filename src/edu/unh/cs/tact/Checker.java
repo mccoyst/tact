@@ -62,7 +62,7 @@ public class Checker{
 	}
 
 	/** Aside from unit tests, don't call this manually. */
-	public static void guardByStatic(Object o, String guard){
+	public static void guardByField(Object o, String guard){
 		if(!enabled || o == null)
 			return;
 
