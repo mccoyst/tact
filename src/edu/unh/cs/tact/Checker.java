@@ -15,6 +15,7 @@ public class Checker{
 	private static Map<Object, Object> runtimeGuarded =
 		synchronizedMap(new WeakHashMap<Object, Object>());
 
+	/** Aside from unit tests, don't call this manually. */
 	public static void check(Object o){
 		if(!enabled || o == null)
 			return;
@@ -50,6 +51,7 @@ public class Checker{
 		throw new IllegalAccessError(String.format("BAD access (%s -> %s)\n", o, ct));
 	}
 
+	/** Aside from unit tests, don't call this manually. */
 	public static void guardByThis(Object o){
 		if(!enabled || o == null)
 			return;
@@ -59,6 +61,7 @@ public class Checker{
 				"BAD unguarded-access [this] (%s -> %s)", o, Thread.currentThread()));
 	}
 
+	/** Aside from unit tests, don't call this manually. */
 	public static void guardByStatic(Object o, String guard){
 		if(!enabled || o == null)
 			return;
@@ -91,6 +94,9 @@ public class Checker{
 				"BAD unguarded-access [static] (%s -> %s)", o, Thread.currentThread()));
 	}
 
+	/** release releases o from the current thread's ownership.
+	@throws IllegalAccessError if the current thread does not own o.
+	*/
 	public static void release(Object o){
 		if(!enabled || o == null)
 			return;
@@ -117,6 +123,11 @@ public class Checker{
 		throw new IllegalAccessError(String.format("BAD release (%s <- %s)\n", o, ct));
 	}
 
+	/** guardBy changes o's ownership from the default strategy to
+	a runtime guard. This has no effect on fields that have been annotated
+	with @GuardedBy.
+	@throws IllegalAccessError if a guard already exists
+	*/
 	public static void guardBy(Object o, Object guard){
 		if(!enabled || o == null)
 			return;
@@ -129,16 +140,28 @@ public class Checker{
 	}
 
 
+	/** init should be called before any of the Checker methods not injected by tact
+	will be called.
+	*/
 	public static void init(){
 		enabled = false; // TODO: Well, this name is a lie.
 	}
 
+	/** releaseAndStart atomically creates a new Thread with r, gives ownership
+	of r to the new Thread, and starts that Thread.
+	Use this when a runnable is created with the default
+	ownership strategy and you want to run it in another Thread.
+	*/
 	public static void releaseAndStart(Runnable r){
 		Thread t = new Thread(r);
 		giveTo(r, t);
 		t.start();
 	}
 
+	/** releaseAndStart atomically gives ownership of t to itself and starts it.
+	Use this for Threads created with the default ownership strategy. If you
+	have a class that extends Thread, this is what you want.
+	*/
 	public static void releaseAndStart(Thread t){
 		giveTo(t, t);
 		t.start();
