@@ -44,7 +44,7 @@ public class test2{
 
 		public void run(){
 			for(int i = 0; i < 10000; i++){
-					number ++;
+				number ++;
 			}
 		}
 	}
