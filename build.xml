@@ -34,6 +34,12 @@
 				<attribute name="Class-Path" value="${ant.project.name}.jar"/>
 			</manifest>
 		</jar>
+		<jar jarfile="progs.jar" basedir="build" includes="edu/unh/cs/tact_progs/**">
+			<manifest>
+				<attribute name="Main-Class" value="edu.unh.cs.tact_progs.Main"/>
+				<attribute name="Class-Path" value="${ant.project.name}.jar"/>
+			</manifest>
+		</jar>
 	</target>
 
 	<target name="test" depends="jar">
