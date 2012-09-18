@@ -56,7 +56,7 @@ Thread holds a certain lock.
 	…
 	sharedData = 13; // throws IllegalAccessError
 
-Only "this", static and non-staic members of the form 
+Only "this", static and non-static members of the form 
 "full.package.and.Class.field", and class objects of the form 
 "full.package.and.Class.class" are accepted as guard locks. Oftentimes, these
 compile-time guards are insufficient. A runtime method exists to fill
