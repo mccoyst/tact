@@ -5,6 +5,9 @@ import org.junit.*;
 import static org.junit.Assert.*;
 import java.util.*;
 
+import org.apache.bcel.Repository;
+import org.apache.bcel.classfile.*;
+
 public class CheckerTest{
 	@Test public void skipNull(){
 		Checker.check(null);
@@ -183,6 +186,24 @@ public class CheckerTest{
 			});
 		}catch(RuntimeException e){
 			throw Util.rootCause(e);
+		}
+	}
+
+	@GuardedBy("this")
+	private static class GuardedDummy{
+		public int n;
+	}
+
+	@Test(expected=IllegalAccessError.class)
+	public void unguardedClassGuard(){
+		GuardedDummy d = new GuardedDummy();
+		Checker.guardByThis(d);
+	}
+
+	@Test public void guardedClassGuard(){
+		GuardedDummy d = new GuardedDummy();
+		synchronized(d){
+			Checker.guardByThis(d);
 		}
 	}
 }

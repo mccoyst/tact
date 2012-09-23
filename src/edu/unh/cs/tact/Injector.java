@@ -131,7 +131,7 @@ class Injector{
 		if(f == null)
 			return null;
 
-		String guard = guardName(f);
+		String guard = guardName(f, jc);
 		if(f.isFinal() && guard == null)
 			return null;
 		if(guard == null)
@@ -212,8 +212,18 @@ class Injector{
 		return null;
 	}
 
-	private String guardName(Field f){
-		for(AnnotationEntry ae : f.getAnnotationEntries()){
+	static String guardName(Field f, JavaClass jc){
+		String fieldGuard = guardName(f.getAnnotationEntries());
+		if(fieldGuard != null)
+			return fieldGuard;
+
+		String classGuard = guardName(jc.getAnnotationEntries());
+		System.err.printf("class guard = %s\n", classGuard);
+		return classGuard;
+	}
+
+	private static String guardName(AnnotationEntry[] entries){
+		for(AnnotationEntry ae : entries){
 			if(!ae.getAnnotationType().equals("Ledu/unh/cs/tact/GuardedBy;"))
 				continue;
 
@@ -221,6 +231,7 @@ class Injector{
 				if(ev.getNameString().equals("value"))
 					return ev.getValue().stringifyValue();
 		}
+
 		return null;
 	}
 
