@@ -155,11 +155,13 @@ public class Checker{
 	of r to the new Thread, and starts that Thread.
 	Use this when a runnable is created with the default
 	ownership strategy and you want to run it in another Thread.
+	@return the newly-created Thread
 	*/
-	public static void releaseAndStart(Runnable r){
+	public static Thread releaseAndStart(Runnable r){
 		Thread t = new Thread(r);
 		giveTo(r, t);
 		t.start();
+		return t;
 	}
 
 	/** releaseAndStart atomically gives ownership of t to itself and starts it.
