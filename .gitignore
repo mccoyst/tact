@@ -5,3 +5,4 @@ files.jar
 progs.jar
 TEST-*
 java.hprof.txt
+ppjit.hprof.txt
