@@ -1,6 +1,8 @@
 Tact
 ====
 
+[![Build Status](https://travis-ci.org/mccoyst/tact.svg?branch=master)](https://travis-ci.org/mccoyst/tact)
+
 Tact is a Java program and package that inserts runtime
 checks into Java bytecode. The goal of these checks is to aid
 the development of multi-threaded programs by ensuring
